@@ -21,7 +21,6 @@ A cycle-accurate hardware implementation of the original Taito **Rainbow Islands
 
 The core is in active development. The following issues are currently being worked on:
 
-* **No Sound** — YM2151 / audio path implementation is currently under active development.
 * **Direct Video** — Results in a black screen on boot.
 * **Screen Wobble** — Observed on some consumer CRTs.
 * **Map Screen** — Positioned slightly too low on the display output.
