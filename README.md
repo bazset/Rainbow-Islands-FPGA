@@ -3,6 +3,7 @@
 ![MiSTer FPGA](https://img.shields.io/badge/Platform-MiSTer_FPGA-blue?style=flat-square)
 ![Status](https://img.shields.io/badge/Status-Beta-yellow?style=flat-square)
 ![License](https://img.shields.io/badge/License-GPL--3.0-orange?style=flat-square)
+[![Patreon](https://img.shields.io/badge/Support-Patreon-orange?style=flat-square&logo=patreon)](https://www.patreon.com/c/bazset)
 
 A cycle-accurate hardware implementation of the original Taito **Rainbow Islands** arcade hardware for the MiSTer FPGA platform.
 
@@ -13,6 +14,18 @@ A cycle-accurate hardware implementation of the original Taito **Rainbow Islands
 > [!NOTE]
 > **Hardware Implementation, Not Emulation**  
 > This is a full hardware-level implementation of the original PCB—**not** software emulation or a high-level abstraction. Every physical chip on the board is instantiated as a dedicated HDL module, routed precisely as designed on the physical PCB trace routes.
+
+---
+
+## 🐛 Known Issues
+
+The core is in active development. The following issues are currently being worked on:
+
+* **No Sound** — YM2151 / audio path implementation is currently under active development.
+* **Direct Video** — Results in a black screen on boot.
+* **Screen Wobble** — Observed on some consumer CRTs.
+* **Map Screen** — Positioned slightly too low on the display output.
+* **Sprite Flicker** — Occurs when a high density of sprites shares scanlines (most visible when the end-of-level treasure chest opens).
 
 ---
 
@@ -55,8 +68,16 @@ Both ZIP files below are **mandatory**:
 
 ---
 
+## ❤️ Support the Project
+
+If you'd like to follow along with ongoing core development, get early updates, or support arcade core preservation efforts, check out my Patreon:
+
+👉 **[patreon.com/c/bazset](https://www.patreon.com/c/bazset)**
+
+---
+
 ## 📜 Credits & Licensing
 
-* FPGA core implementation by bazset. https://www.patreon.com/c/bazset
+* FPGA core implementation by **bazset**.
 * Original arcade hardware designed by **Taito Corporation** (1987).
 * Distributed under the **GNU General Public License v3.0**.
