@@ -1,20 +1,27 @@
-MiSTer Core Release: Rainbow Islands (Taito, 1987)
+# 🌈 MiSTer Core Release: Rainbow Islands (Taito, 1987)
 
-Hardware Implementation
-This is a hardware implementation of the arcade board, not a simulation of its behavior. Each chip on the original PCB is its own HDL module, wired together as the real board wires them.
+> **Hardware Implementation**  
+> This is a full hardware-level implementation of the original arcade board—**not** an emulator or high-level simulation. Every physical chip on the original PCB is implemented as its own dedicated HDL module, wired together precisely as the physical trace routing dictates.
 
-Installation
+---
 
-The core needs the genuine C-chip ROMs to run. Currently, only the rbisland (World, rev 2, set 1) set is supported.
+## 🛠️ Installation
 
-File Destination on the SD Card:
+> [!IMPORTANT]
+> The core requires genuine **C-chip ROMs** to function. Currently, only the `rbisland` (**World, rev 2, set 1**) release is supported.
 
-Rainbow Islands (World, rev 2, set 1) bazset.mra /media/fat/_Arcade/
-Rbisland.rbf /media/fat/_Arcade/cores/
-rbisland.zip /media/fat/games/mame/
-cchip.zip /media/fat/games/mame/
+### SD Card Directory Mapping
 
-Both zips are required:
+| File | File Name | SD Card Destination |
+| :--- | :--- | :--- |
+| **MRA File** | `bazset.mra` | `/media/fat/_Arcade/` |
+| **Core File** | `Rbisland.rbf` | `/media/fat/_Arcade/cores/` |
+| **ROM Zip** | `rbisland.zip` | `/media/fat/games/mame/` |
+| **C-Chip Zip** | `cchip.zip` | `/media/fat/games/mame/` |
 
-rbisland.zip must contain the game-specific C-chip EPROM (cchip_b22-15.53)
-cchip.zip supplies cchip_upd78c11.bin (the internal mask ROM shared by every C-chip game)
+### Required Zip Contents
+
+Both zip files below are **strictly required**:
+
+* **`rbisland.zip`** — Must contain the game-specific C-chip EPROM (`cchip_b22-15.53`).
+* **`cchip.zip`** — Provides `cchip_upd78c11.bin` *(the internal mask ROM shared across all C-chip titles)*.
