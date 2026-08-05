@@ -57,6 +57,6 @@ Both ZIP files below are **mandatory**:
 
 ## 📜 Credits & Licensing
 
-* FPGA core implementation by bazset.
+* FPGA core implementation by bazset. https://www.patreon.com/c/bazset
 * Original arcade hardware designed by **Taito Corporation** (1987).
 * Distributed under the **GNU General Public License v3.0**.
