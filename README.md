@@ -3,6 +3,14 @@
 > **Hardware Implementation**  
 > This is a full hardware-level implementation of the original arcade board—**not** an emulator or high-level simulation. Every physical chip on the original PCB is implemented as its own dedicated HDL module, wired together precisely as the physical trace routing dictates.
 
+Main CPU MC68000 @ 8 MHz
+Sound CPU Z80 @ 4 MHz
+FM Audio YM2151 @ 4 MHz
+Sound Mailbox Taito PC060HA
+Tile maps (BG + FG) Taito PC080SN
+Sprites Taito PC090OJ
+Protection / Inputs Taito C-chip (NEC µPD78C11)
+
 ---
 
 ## 🛠️ Installation
