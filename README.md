@@ -1,8 +1,5 @@
-<<<<<<< HEAD
-﻿# Rainbow Islands (MiSTer FPGA)
-=======
+
 # Rainbow Islands (MiSTer FPGA)
->>>>>>> c2d7d49e7f921f25f4e0d9ade43bbecd91079628
 
 Hardware implementation of Taito’s **Rainbow Islands** (1987) for [MiSTer FPGA](https://mister-devel.github.io/MkDocs_MiSTer/).
 
