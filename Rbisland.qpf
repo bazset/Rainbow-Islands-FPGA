@@ -1,0 +1,8 @@
+QUARTUS_VERSION = "17.0"
+
+# Revision name drives the output filenames, so this project now produces
+# output_files/Rbisland.rbf directly rather than Arcade-Rbisland.rbf.
+# The .mra's <rbf>Rbisland</rbf> matches, and the deliberately distinct
+# name keeps Update All from overwriting this core with someone else's
+# Rainbow Islands release.
+PROJECT_REVISION = "Rbisland"

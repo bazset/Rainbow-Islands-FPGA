@@ -1,0 +1,150 @@
+<!--
+Rainbow Islands - Extra Version (Taito, 1988)
+
+Requires both rbislande.zip and cchip.zip. The C chip's 4KB internal mask ROM
+(cchip_upd78c11.bin) is a shared MAME device ROM and lives in cchip.zip; the
+8KB game specific EPROM (cchip_b39-05.53) is inside rbislande.zip.
+
+SAME HARDWARE AS RAINBOW ISLANDS. Confirmed verbatim from MAME's driver list
+(src/mame/taito/rbisland.cpp:1133):
+
+    GAME( 1988, rbislande, 0, rbisland, rbisland, rbisland_state, empty_init,
+          ROT0, "Taito", "Rainbow Islands - Extra Version", MACHINE_SUPPORTS_SAVE )
+
+Both the machine config (rbisland) and the input ports (rbisland) are shared
+with the parent, so the 68000 memory map, the DIP meanings and every chip are
+identical. Extra differs only in:
+
+    - the four 68000 program EPROMs   b39-01..04  (were b22-10-1/11-1/08-1/09-1)
+    - the C chip game EPROM           cchip_b39-05.53  (was cchip_b22-15.53)
+
+Tiles, sprites and the Z80 sound program are byte-for-byte the same parts.
+That is why the core needs no GAME_ID change to run this: see the note in
+rtl/game_config.svh.
+
+All regions are concatenated into a single stream that the core splits by
+address:
+
+    0x000000  68000 program    512KB
+    0x080000  Z80 program      112KB
+    0x09C000  PC080SN tiles    512KB
+    0x11C000  PC090OJ sprites  640KB
+    0x1BC000  C chip ROMs      12KB
+
+NO YM SCRIPT BLOB. Earlier .mra files carried a ~500KB generated YM2151
+register capture, because the core could not make sound and replayed captured
+music instead. The real sound path works again (SOUND_SCRIPTS = 0 in
+Rbisland.sv, after the PC060HA read timing fix - see doc/DEBUG_JOURNAL.md
+section 1.4), so the blob is gone and the stream simply ends after the C chip.
+
+ROM names, CRCs and DIP definitions follow MAME's src/mame/taito/rbisland.cpp
+and src/mame/taito/taitocchip.cpp.
+-->
+<misterromdescription>
+    <rbf>Rbisland</rbf>
+    <name>Rainbow Islands - Extra Version</name>
+    <setname>rbislande</setname>
+    <year>1988</year>
+    <manufacturer>Taito</manufacturer>
+    <players>2</players>
+    <joystick>2way</joystick>
+    <rotation>horizontal</rotation>
+    <region>World</region>
+
+    <!-- ZIP SEARCH CHAIN, in priority order. Rainbow Islands Extra is a MAME
+         CLONE of rbisland, so only the b39-* program ROMs are actually its
+         own; b22-01/02/03/04/12/13/14 below are PARENT ROMs. On a split set
+         those parent files live in rbisland.zip and are absent from
+         rbislande.zip entirely, so without the middle entry every b22-* part
+         fails to resolve and the game will not load. Listing all three covers
+         merged, non-merged and split sets without hand-extracting anything. -->
+    <rom index="0" zip="rbislande.zip|rbisland.zip|cchip.zip" type="merged" md5="none">
+
+        <!-- 68000 program. Even offset takes the high byte of each word,
+             matching MAME's ROM_LOAD16_BYTE pairs:
+                 b39-01.19 @ 0x00000   b39-02.20 @ 0x00001
+                 b39-03.21 @ 0x20000   b39-04.22 @ 0x20001
+                 b22-03.23 @ 0x40000   b22-04.24 @ 0x40001 -->
+        <interleave output="16">
+            <part name="b39-01.19" crc="50690880" map="01"/>
+            <part name="b39-02.20" crc="4dead71f" map="10"/>
+        </interleave>
+        <interleave output="16">
+            <part name="b39-03.21" crc="4a4cb785" map="01"/>
+            <part name="b39-04.22" crc="4caa53bd" map="10"/>
+        </interleave>
+        <interleave output="16">
+            <part name="b22-03.23" crc="3ebb0fb8" map="01"/>
+            <part name="b22-04.24" crc="91625e7f" map="10"/>
+        </interleave>
+
+        <!-- Z80 program. One 64KB chip split either side of a 0xC000 gap.
+             The gap is filled with 00 because sound bank 0 maps onto its
+             tail, and 00 is NOP on a Z80 where FF would be RST 38h. -->
+        <part name="b22-14.43" crc="113c1a5b" offset="0" length="0x4000"/>
+        <part repeat="0xC000">00</part>
+        <part name="b22-14.43" crc="113c1a5b" offset="0x4000" length="0xC000"/>
+
+        <!-- PC080SN tiles, delivered raw. The word byte swap MAME applies
+             with ROM_LOAD16_WORD_SWAP is performed in the core instead. -->
+        <part name="b22-01.2" crc="b76c9168"/>
+
+        <!-- PC090OJ sprites. Only the first 512KB is word swapped in MAME;
+             the final 128KB is a plain even/odd interleave. -->
+        <part name="b22-02.5" crc="1b87ecf0"/>
+        <interleave output="16">
+            <part name="b22-13.6" crc="2fda099f" map="01"/>
+            <part name="b22-12.7" crc="67a76dc6" map="10"/>
+        </interleave>
+
+        <!-- C chip: internal mask ROM then game specific EPROM. -->
+        <part name="cchip_upd78c11.bin" crc="43021521"/>
+        <part name="cchip_b39-05.53" crc="397735e3"/>
+    </rom>
+
+    <!-- NO <nvram> BLOCK HERE, ON PURPOSE. DO NOT COPY ONE IN FROM THE
+         "Rainbow Islands (World, rev 2, set 1)" .mra.
+
+         Hi-score saving would APPEAR to work and would CORRUPT WORK RAM on
+         restore. The reason is that one RBF serves both sets:
+
+           * rbisland_top.sv takes GAME_ID as a COMPILE-TIME parameter, and
+             Rbisland.sv instantiates it without overriding the default, so
+             the shipped core is built as `GAME_RAINBOW`.
+           * hiscore_nvram.sv therefore uses Rainbow Islands' window,
+             0x10D0CC (0x32 bytes) + 0x10E1F2 (0x04 bytes).
+           * Extra's table is somewhere else entirely - 0x10D0D2 and
+             0x10E1B6, per MAME's hiscore.dat. Six bytes on for the first
+             block, sixty bytes BACK for the second.
+
+         So restoring an Extra save would write the score table over whatever
+         Extra keeps at Rainbow's addresses, which is live work RAM, not a
+         score table. rtl/game_config.svh's CFG_HS_* comment calls this out
+         explicitly as the corrupt-on-restore failure to avoid.
+
+         WHAT IT WOULD TAKE TO ENABLE IT: the core has to learn WHICH set is
+         loaded at runtime rather than at compile time - conventionally an
+         <rom index="1"> mod byte in each .mra feeding a GAME_ID mux, which
+         hiscore_nvram.sv's window selection then follows. That is an RTL
+         change, not an .mra change, and until it exists this file correctly
+         offers no NVRAM at all. The OSD's "Autosave HiScores" toggle simply
+         does nothing when this .mra is loaded, which is the safe failure. -->
+
+    <switches default="fe,bf" base="16">
+        <dip name="Cabinet" bits="0" ids="Upright,Cocktail"/>
+        <dip name="Flip Screen" bits="1" ids="On,Off"/>
+        <dip name="Service Mode" bits="2" ids="On,Off"/>
+        <dip name="Demo Sounds" bits="3" ids="Off,On"/>
+        <dip name="Coin A" bits="4,5" ids="2C 3C,2C 1C,1C 2C,1C 1C"/>
+        <dip name="Coin B" bits="6,7" ids="2C 3C,2C 1C,1C 2C,1C 1C"/>
+        <dip name="Difficulty" bits="8,9" ids="Hardest,Hard,Easy,Medium"/>
+        <dip name="Bonus Life" bits="10" ids="None,100k 1000k"/>
+        <dip name="Complete Bonus" bits="11" ids="100k,1 Up"/>
+        <dip name="Lives" bits="12,13" ids="2,1,4,3"/>
+        <dip name="Language" bits="14" ids="English,Japanese"/>
+        <dip name="Coin Mode" bits="15" ids="Mode B (World),Mode A (Japan)"/>
+    </switches>
+
+    <buttons names="Jump,Fire,Start 1P,Start 2P,Coin,Service,Pause"
+             default="A,B,Start,Select,R,L,X" count="7"/>
+</misterromdescription>

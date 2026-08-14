@@ -1,0 +1,485 @@
+# ============================================================================
+# Rbisland.qsf - Quartus project settings (skeleton)
+#
+# Target device matches the MiSTer main board: Cyclone V 5CEBA4F23C8
+# (same part used by the official MiSTer_de10 top-level project).
+# ============================================================================
+
+# DE10-nano = Cyclone V SoC 5CSEBA6U23I7. The previous value here
+# (5CEBA4F23C8) was a Cyclone V "E" part -- no HPS at all, so sys_top's
+# HPS interface could never map to it, and it's also much smaller.
+# It additionally caused "Error (21075): The junction temperature range
+# value of '[0 C, 100 C]' is illegal", because that E part is a
+# commercial-temp device (0-85 C) while the MiSTer framework sets the
+# industrial 0-100 C range that 5CSEBA6U23I7 supports.
+set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
+set_global_assignment -name MAX_CORE_JUNCTION_TEMP 100
+# Confirmed from the official MiSTer-devel wiki ("emu - Top Level of a
+# MiSTer core"): sys_top.v (part of sys/) is the REAL physical top-level
+# that Quartus should synthesize -- it handles board pin assignments and
+# instantiates this project's own "emu" (Rbisland.sv) internally.
+# Leaving this as "emu" (this project's own original placeholder, from
+# before a real sys/ was ever available to confirm against) would
+# attempt to synthesize "emu" directly against physical device pins,
+# which won't work -- HPS_BUS and friends are meant to be wired
+# internally by sys_top, not pin-assigned directly.
+set_global_assignment -name TOP_LEVEL_ENTITY sys_top
+
+set_global_assignment -name ORIGINAL_QUARTUS_VERSION 20.1.1
+set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
+
+# Quartus produces a .sof by default; MiSTer loads .rbf. Without this
+# line the Assembler finishes successfully and you simply never get an
+# .rbf -- which is exactly what happened on the first successful build.
+set_global_assignment -name GENERATE_RBF_FILE ON
+# Quartus warns when this isn't set and defaults conservatively. "ALL"
+# lets it use every core available -- this design takes a while to
+# compile (12+ minutes observed), so it's worth setting.
+set_global_assignment -name NUM_PARALLEL_PROCESSORS ALL
+set_global_assignment -name ERROR_CHECK_FREQUENCY_DIVISOR 1
+# USE_CONFIGURATION_DEVICE / STRATIX_DEVICE_IO_STANDARD removed: neither
+# appears in the working reference cores (meathax/s32, meathax/mrdo). The
+# Cyclone V SoC on a DE10-nano is configured by the HPS, not by a serial
+# configuration device, and a blanket default I/O standard can fight the
+# per-pin standards that sys/sys.tcl assigns (SDRAM and HDMI pins need
+# specific ones).
+set_global_assignment -name CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION "USE AS REGULAR IO"
+
+# ---- Sources -----------------------------------------------------------
+set_global_assignment -name SYSTEMVERILOG_FILE Rbisland.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/rbisland_top.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/rbisland_bus_decoder.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/cpu68k_wrapper.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/fx68k/fx68k.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/fx68k/fx68kAlu.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/fx68k/uaddrPla.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/z80_sound_wrapper.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/z80_bus_decoder.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/pc060ha_ciu.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/ym2151_wrapper.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/ym2203_wrapper.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/ym_script_player.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/sound_probe.sv
+set_global_assignment -name VERILOG_FILE rtl/jt51/jt51.v
+set_global_assignment -name VERILOG_FILE rtl/jt51/jt51_acc.v
+set_global_assignment -name VERILOG_FILE rtl/jt51/jt51_csr_op.v
+set_global_assignment -name VERILOG_FILE rtl/jt51/jt51_eg.v
+set_global_assignment -name VERILOG_FILE rtl/jt51/jt51_exp2lin.v
+set_global_assignment -name VERILOG_FILE rtl/jt51/jt51_exprom.v
+set_global_assignment -name VERILOG_FILE rtl/jt51/jt51_kon.v
+set_global_assignment -name VERILOG_FILE rtl/jt51/jt51_lfo.v
+set_global_assignment -name VERILOG_FILE rtl/jt51/jt51_lin2exp.v
+set_global_assignment -name VERILOG_FILE rtl/jt51/jt51_mmr.v
+set_global_assignment -name VERILOG_FILE rtl/jt51/jt51_mod.v
+set_global_assignment -name VERILOG_FILE rtl/jt51/jt51_noise.v
+set_global_assignment -name VERILOG_FILE rtl/jt51/jt51_noise_lfsr.v
+set_global_assignment -name VERILOG_FILE rtl/jt51/jt51_op.v
+set_global_assignment -name VERILOG_FILE rtl/jt51/jt51_pg.v
+set_global_assignment -name VERILOG_FILE rtl/jt51/jt51_phinc_rom.v
+set_global_assignment -name VERILOG_FILE rtl/jt51/jt51_phrom.v
+set_global_assignment -name VERILOG_FILE rtl/jt51/jt51_pm.v
+set_global_assignment -name VERILOG_FILE rtl/jt51/jt51_reg.v
+set_global_assignment -name VERILOG_FILE rtl/jt51/jt51_reg_ch.v
+set_global_assignment -name VERILOG_FILE rtl/jt51/jt51_sh.v
+set_global_assignment -name VERILOG_FILE rtl/jt51/jt51_timers.v
+set_global_assignment -name VERILOG_FILE rtl/jt51/sep32.v
+set_global_assignment -name VERILOG_FILE rtl/jt51/sep32_cnt.v
+
+# ---- JT03 / JT12 (YM2203) + JT49 (SSG), Jose Tejada, GPLv3 -------------
+# Used only by GAME_VOLFIED via rtl/ym2203_wrapper.sv. The generate guard
+# in rbisland_top.sv eliminates the whole chip for every other GAME_ID.
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt03.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt03_acc.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt12_acc.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt12_csr.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt12_div.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt12_dout.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt12_eg.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt12_eg_cnt.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt12_eg_comb.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt12_eg_ctrl.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt12_eg_final.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt12_eg_pure.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt12_eg_step.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt12_exprom.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt12_kon.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt12_lfo.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt12_logsin.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt12_mmr.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt12_mod.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt12_op.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt12_pg.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt12_pg_comb.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt12_pg_dt.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt12_pg_inc.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt12_pg_sum.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt12_pm.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt12_reg.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt12_reg_ch.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt12_rst.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt12_sh.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt12_sh24.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt12_sh_rst.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt12_single_acc.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt12_sumch.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt12_timers.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt12_top.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt49.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt49_bus.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt49_cen.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt49_dcrm.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt49_dcrm2.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt49_div.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt49_dly.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt49_eg.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt49_exp.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt49_mave.v
+set_global_assignment -name VERILOG_FILE rtl/jt03/jt49_noise.v
+set_global_assignment -name VHDL_FILE rtl/t80/T80_Pack.vhd
+set_global_assignment -name VHDL_FILE rtl/t80/T80_ALU.vhd
+set_global_assignment -name VHDL_FILE rtl/t80/T80_MCode.vhd
+set_global_assignment -name VHDL_FILE rtl/t80/T80_Reg.vhd
+set_global_assignment -name VHDL_FILE rtl/t80/T80.vhd
+set_global_assignment -name VHDL_FILE rtl/t80/T80s.vhd
+# rtl/pll.sv is NOT in the project -- deliberately. A real Quartus-
+# generated PLL IP (rtl/pll.v + rtl/pll/pll_0002.v) now provides module
+# "pll", and MiSTer's sys_top REQUIRES CLK_VIDEO to come from genuine
+# PLL hard-IP: its clock-select blocks reject anything else with
+# "Error (15836): ... must be driven by a PLL's output clock". Our
+# placeholder pll.sv is ordinary fabric logic, so it can never satisfy
+# that, no matter how its frequencies are arranged.
+#
+# rtl/pll.sv is kept in the tree ONLY as (a) documentation of the exact
+# M/N/C parameters the real IP should use (M=24, N=1, C0=25, C1=200 ->
+# 48.000MHz/6.000MHz exactly from 50MHz) and (b) a frequency-accurate
+# simulation model for Icarus testbenches, behind `define SIMULATION.
+# Re-adding it here would both collide with the real IP's module name
+# and reintroduce the sys_top clock-source error.
+# set_global_assignment -name SYSTEMVERILOG_FILE rtl/pll.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/sdram.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/sdram_arbiter.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/gfx_rom_loader.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/pc080sn_layer_renderer.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/gfx_read_arbiter2.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/pc090oj_renderer.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/rbisland_cchip.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/ika87ad/IKA87AD_mnemonics.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/ika87ad/IKA87AD.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/ika87ad/IKA87AD_microcode.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/ika87ad/IKA87AD_opdec.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/ika87ad/IKA87AD_primitives.sv
+set_global_assignment -name VERILOG_FILE rtl/ika87ad/jttc0030cmd.v
+# High score NVRAM. Addresses come from MAME's hiscore.dat via
+# rtl/game_config.svh; see the CFG_HS_* block there.
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/hiscore_nvram.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/video.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/audio_mixer.sv
+# Pause supporter panel. Its font ROM is rtl/font8x8.hex, read by $readmemh at
+# elaboration -- regenerate with `python tools/build_font.py` if the text or
+# the glyphs change, because the font ships inside the .rbf.
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/pause_overlay.sv
+# High-score toast. Shares rtl/font8x8.hex with the pause panel. Unlike that
+# module this one is drawn over a RUNNING game, so it touches only the video
+# mux and never a clock enable.
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/hs_toast.sv
+# CRT Adjust -- rmonic79/MiSTer-CRT-Adjust, rtl/crt_adjust.sv from that repo,
+# vendored verbatim (GPLv3, author Umberto Parisi). Core-side variant, so
+# nothing under sys/ is modified. See the glue in Rbisland.sv.
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/crt/crt_adjust.sv
+
+# fx68k.sv loads microrom.mem/nanorom.mem via relative-path $readmemb --
+# add its directory to the search path so both Quartus synthesis and any
+# simulator find them without copying them elsewhere.
+set_global_assignment -name SEARCH_PATH rtl/fx68k
+# rtl/ is on the search path so `include "game_config.svh"` resolves. Both
+# rbisland_top.sv and rbisland_bus_decoder.sv include it for the per-game
+# base-address table.
+set_global_assignment -name SEARCH_PATH rtl
+set_global_assignment -name SEARCH_PATH ./
+
+# ---- MiSTer common framework: sys/sys.qip is the file that pulls in
+# ---- EVERY framework source (hps_io.sv, sd_card.sv, the pll_cfg/
+# ---- pll_hdmi/pll_audio stuff, etc) in one shot -- this line was left
+# ---- commented out from this project's very first skeleton (before a
+# ---- real sys/ ever existed to reference), and never got uncommented
+# ---- again once real compilation actually started, which is exactly
+# ---- why hps_io came back as "instantiates undefined entity": Quartus
+# ---- was never told to look at sys/ at all. Uncommented now that a
+# ---- real sys/ (copied from MiSTer-devel/Template_MiSTer) is expected
+# ---- to be present alongside this project -- see sys/README.md.
+
+set_global_assignment -name SDC_FILE Rbisland.sdc
+
+# ============================================================================
+# BOARD PIN ASSIGNMENTS -- THE FIX FOR "no signal"
+# ============================================================================
+# sys/sys.tcl and sys/sys_analog.tcl carry every DE10-nano pin location and
+# I/O standard (HDMI, SDRAM, HPS, analog video, audio). They are TCL, not
+# .qip, so they must be `source`d -- adding sys/sys.qip alone does NOT bring
+# them in.
+#
+# Without these lines Quartus compiled cleanly (0 errors, timing met, .rbf
+# produced) but reported:
+#
+#   Critical Warning (169085): No exact pin location assignment(s) for
+#   145 pins of 145 total pins.
+#
+# ALL 145 I/O pins were then placed at arbitrary physical locations, so the
+# HDMI transmitter, SDRAM and everything else were wired to whatever pins the
+# fitter happened to pick. That is why the display showed "no signal" on both
+# HDMI and CRT while the core itself was perfectly healthy internally -- the
+# video was being generated correctly and sent to the wrong physical pins.
+#
+# Confirmed against meathax/s32 and meathax/mrdo: neither contains a single
+# set_location_assignment, because both source these two scripts instead.
+# Resource savers used by meathax/s32 -- this design fits, but not with
+# much headroom, and neither feature is used here.
+set_global_assignment -name VERILOG_MACRO "MISTER_DISABLE_YC=1"
+set_global_assignment -name VERILOG_MACRO "MISTER_DISABLE_ALSA=1"
+# Framebuffer interface, required by screen rotation.
+#
+# DISABLED -- it breaks Direct Video on a real CRT.
+#
+# sys_top.v:295 derives `vga_fb = cfg[12] | vga_force_scaler`, and lines
+# 1317-1320 route hs/vs/de/data from the Direct Video path ONLY while
+# `~vga_fb`. Whenever the framebuffer is active the output falls back to the
+# scaler instead, which emits the configured HDMI mode (640x480@60 here) --
+# nothing a 15 kHz CRT can display. It presents as a black screen that flicks
+# on and off as the framebuffer comes and goes, and takes the audio with it.
+# meathax's Sega System 32 core, which works on that hardware, has this macro
+# commented out in every one of its .qsf files and instantiates no
+# screen_rotate at all.
+#
+# Turning it back on: uncomment this line. Rbisland.sv guards the FB_* ports,
+# FB_FORCE_BLANK, the screen_rotate instance and the Rotation/Flip OSD entries
+# behind the same macro, so nothing else has to change. sys_top.v:1790 wraps
+# its FB_* connections in `ifdef MISTER_FB, so the macro and that port list
+# must stay in step.
+#set_global_assignment -name VERILOG_MACRO "MISTER_FB=1"
+
+source sys/sys.tcl
+set_global_assignment -name FAMILY "Cyclone V"
+set_global_assignment -name DEVICE 5CSEBA6U23I7
+set_global_assignment -name DEVICE_FILTER_PACKAGE UFBGA
+set_global_assignment -name DEVICE_FILTER_PIN_COUNT 672
+set_global_assignment -name DEVICE_FILTER_SPEED_GRADE 7
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to ADC_CONVST
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to ADC_SCK
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to ADC_SDI
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to ADC_SDO
+set_location_assignment PIN_U9 -to ADC_CONVST
+set_location_assignment PIN_V10 -to ADC_SCK
+set_location_assignment PIN_AC4 -to ADC_SDI
+set_location_assignment PIN_AD4 -to ADC_SDO
+set_location_assignment PIN_U14 -to IO_SCL
+set_location_assignment PIN_AG9 -to IO_SDA
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to IO_S*
+set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to IO_S*
+set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to IO_S*
+set_location_assignment PIN_AF17 -to USER_IO[6]
+set_location_assignment PIN_AF15 -to USER_IO[5]
+set_location_assignment PIN_AG16 -to USER_IO[4]
+set_location_assignment PIN_AH11 -to USER_IO[3]
+set_location_assignment PIN_AH12 -to USER_IO[2]
+set_location_assignment PIN_AH9 -to USER_IO[1]
+set_location_assignment PIN_AG11 -to USER_IO[0]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to USER_IO[*]
+set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to USER_IO[*]
+set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to USER_IO[*]
+set_location_assignment PIN_AH7 -to SDCD_SPDIF
+set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to SDCD_SPDIF
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to SDCD_SPDIF
+set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to SDCD_SPDIF
+set_location_assignment PIN_Y11 -to SDRAM_A[0]
+set_location_assignment PIN_AA26 -to SDRAM_A[1]
+set_location_assignment PIN_AA13 -to SDRAM_A[2]
+set_location_assignment PIN_AA11 -to SDRAM_A[3]
+set_location_assignment PIN_W11 -to SDRAM_A[4]
+set_location_assignment PIN_Y19 -to SDRAM_A[5]
+set_location_assignment PIN_AB23 -to SDRAM_A[6]
+set_location_assignment PIN_AC23 -to SDRAM_A[7]
+set_location_assignment PIN_AC22 -to SDRAM_A[8]
+set_location_assignment PIN_C12 -to SDRAM_A[9]
+set_location_assignment PIN_AB26 -to SDRAM_A[10]
+set_location_assignment PIN_AD17 -to SDRAM_A[11]
+set_location_assignment PIN_D12 -to SDRAM_A[12]
+set_location_assignment PIN_Y17 -to SDRAM_BA[0]
+set_location_assignment PIN_AB25 -to SDRAM_BA[1]
+set_location_assignment PIN_V12 -to SDRAM_DQ[0]
+set_location_assignment PIN_E8 -to SDRAM_DQ[1]
+set_location_assignment PIN_D11 -to SDRAM_DQ[2]
+set_location_assignment PIN_W12 -to SDRAM_DQ[3]
+set_location_assignment PIN_AH13 -to SDRAM_DQ[4]
+set_location_assignment PIN_D8 -to SDRAM_DQ[5]
+set_location_assignment PIN_AH14 -to SDRAM_DQ[6]
+set_location_assignment PIN_AF7 -to SDRAM_DQ[7]
+set_location_assignment PIN_AE24 -to SDRAM_DQ[8]
+set_location_assignment PIN_AD23 -to SDRAM_DQ[9]
+set_location_assignment PIN_AE6 -to SDRAM_DQ[10]
+set_location_assignment PIN_AE23 -to SDRAM_DQ[11]
+set_location_assignment PIN_AG14 -to SDRAM_DQ[12]
+set_location_assignment PIN_AD5 -to SDRAM_DQ[13]
+set_location_assignment PIN_AF4 -to SDRAM_DQ[14]
+set_location_assignment PIN_AH3 -to SDRAM_DQ[15]
+set_location_assignment PIN_AG13 -to SDRAM_DQML
+set_location_assignment PIN_AF13 -to SDRAM_DQMH
+set_location_assignment PIN_AD20 -to SDRAM_CLK
+set_location_assignment PIN_AG10 -to SDRAM_CKE
+set_location_assignment PIN_AA19 -to SDRAM_nWE
+set_location_assignment PIN_AA18 -to SDRAM_nCAS
+set_location_assignment PIN_Y18 -to SDRAM_nCS
+set_location_assignment PIN_W14 -to SDRAM_nRAS
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to SDRAM_*
+set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to SDRAM_*
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to SDRAM_*
+set_instance_assignment -name FAST_OUTPUT_ENABLE_REGISTER ON -to SDRAM_DQ[*]
+set_instance_assignment -name FAST_INPUT_REGISTER ON -to SDRAM_DQ[*]
+set_instance_assignment -name ALLOW_SYNCH_CTRL_USAGE OFF -to *|SDRAM_*
+set_location_assignment PIN_AE15 -to SD_SPI_CS
+set_location_assignment PIN_AH8 -to SD_SPI_MISO
+set_location_assignment PIN_AG8 -to SD_SPI_CLK
+set_location_assignment PIN_U13 -to SD_SPI_MOSI
+set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to SD_SPI*
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to SD_SPI*
+set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to SD_SPI*
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to FPGA_CLK1_50
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to FPGA_CLK2_50
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to FPGA_CLK3_50
+set_location_assignment PIN_V11 -to FPGA_CLK1_50
+set_location_assignment PIN_Y13 -to FPGA_CLK2_50
+set_location_assignment PIN_E11 -to FPGA_CLK3_50
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to HDMI_I2C_*
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to HDMI_I2S
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to HDMI_LRCLK
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to HDMI_MCLK
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to HDMI_SCLK
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to HDMI_TX_*
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to HDMI_TX_D[*]
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to HDMI_TX_DE
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to HDMI_TX_HS
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to HDMI_TX_VS
+set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to HDMI_TX_CLK
+set_location_assignment PIN_U10 -to HDMI_I2C_SCL
+set_location_assignment PIN_AA4 -to HDMI_I2C_SDA
+set_location_assignment PIN_T13 -to HDMI_I2S
+set_location_assignment PIN_T11 -to HDMI_LRCLK
+set_location_assignment PIN_U11 -to HDMI_MCLK
+set_location_assignment PIN_T12 -to HDMI_SCLK
+set_location_assignment PIN_AG5 -to HDMI_TX_CLK
+set_location_assignment PIN_AD19 -to HDMI_TX_DE
+set_location_assignment PIN_AD12 -to HDMI_TX_D[0]
+set_location_assignment PIN_AE12 -to HDMI_TX_D[1]
+set_location_assignment PIN_W8 -to HDMI_TX_D[2]
+set_location_assignment PIN_Y8 -to HDMI_TX_D[3]
+set_location_assignment PIN_AD11 -to HDMI_TX_D[4]
+set_location_assignment PIN_AD10 -to HDMI_TX_D[5]
+set_location_assignment PIN_AE11 -to HDMI_TX_D[6]
+set_location_assignment PIN_Y5 -to HDMI_TX_D[7]
+set_location_assignment PIN_AF10 -to HDMI_TX_D[8]
+set_location_assignment PIN_Y4 -to HDMI_TX_D[9]
+set_location_assignment PIN_AE9 -to HDMI_TX_D[10]
+set_location_assignment PIN_AB4 -to HDMI_TX_D[11]
+set_location_assignment PIN_AE7 -to HDMI_TX_D[12]
+set_location_assignment PIN_AF6 -to HDMI_TX_D[13]
+set_location_assignment PIN_AF8 -to HDMI_TX_D[14]
+set_location_assignment PIN_AF5 -to HDMI_TX_D[15]
+set_location_assignment PIN_AE4 -to HDMI_TX_D[16]
+set_location_assignment PIN_AH2 -to HDMI_TX_D[17]
+set_location_assignment PIN_AH4 -to HDMI_TX_D[18]
+set_location_assignment PIN_AH5 -to HDMI_TX_D[19]
+set_location_assignment PIN_AH6 -to HDMI_TX_D[20]
+set_location_assignment PIN_AG6 -to HDMI_TX_D[21]
+set_location_assignment PIN_AF9 -to HDMI_TX_D[22]
+set_location_assignment PIN_AE8 -to HDMI_TX_D[23]
+set_location_assignment PIN_T8 -to HDMI_TX_HS
+set_location_assignment PIN_AF11 -to HDMI_TX_INT
+set_location_assignment PIN_V13 -to HDMI_TX_VS
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to KEY[0]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to KEY[1]
+set_location_assignment PIN_AH17 -to KEY[0]
+set_location_assignment PIN_AH16 -to KEY[1]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to LED[0]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to LED[1]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to LED[2]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to LED[3]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to LED[4]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to LED[5]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to LED[6]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to LED[7]
+set_location_assignment PIN_W15 -to LED[0]
+set_location_assignment PIN_AA24 -to LED[1]
+set_location_assignment PIN_V16 -to LED[2]
+set_location_assignment PIN_V15 -to LED[3]
+set_location_assignment PIN_AF26 -to LED[4]
+set_location_assignment PIN_AE26 -to LED[5]
+set_location_assignment PIN_Y16 -to LED[6]
+set_location_assignment PIN_AA23 -to LED[7]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to SW[0]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to SW[1]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to SW[2]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to SW[3]
+set_location_assignment PIN_Y24 -to SW[0]
+set_location_assignment PIN_W24 -to SW[1]
+set_location_assignment PIN_W21 -to SW[2]
+set_location_assignment PIN_W20 -to SW[3]
+set_hps_location_assignment HPSINTERFACEPERIPHERALSPIMASTER_X52_Y72_N111 -to spi
+set_hps_location_assignment HPSINTERFACEPERIPHERALUART_X52_Y67_N111 -to uart
+set_hps_location_assignment HPSINTERFACEPERIPHERALI2C_X52_Y60_N111 -to hdmi_i2c
+set_global_assignment -name PRE_FLOW_SCRIPT_FILE "quartus_sh:sys/build_id.tcl"
+set_global_assignment -name CDF_FILE jtag.cdf
+set_global_assignment -name QIP_FILE sys/sys.qip
+source sys/sys_analog.tcl
+set_location_assignment PIN_AF25 -to SDIO_DAT[0]
+set_location_assignment PIN_AF23 -to SDIO_DAT[1]
+set_location_assignment PIN_AD26 -to SDIO_DAT[2]
+set_location_assignment PIN_AF28 -to SDIO_DAT[3]
+set_location_assignment PIN_AF27 -to SDIO_CMD
+set_location_assignment PIN_AH26 -to SDIO_CLK
+set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to SDIO_*
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to SDIO_*
+set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to SDIO_DAT[*]
+set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to SDIO_CMD
+set_location_assignment PIN_AE17 -to VGA_R[0]
+set_location_assignment PIN_AE20 -to VGA_R[1]
+set_location_assignment PIN_AF20 -to VGA_R[2]
+set_location_assignment PIN_AH18 -to VGA_R[3]
+set_location_assignment PIN_AH19 -to VGA_R[4]
+set_location_assignment PIN_AF21 -to VGA_R[5]
+set_location_assignment PIN_AE19 -to VGA_G[0]
+set_location_assignment PIN_AG15 -to VGA_G[1]
+set_location_assignment PIN_AF18 -to VGA_G[2]
+set_location_assignment PIN_AG18 -to VGA_G[3]
+set_location_assignment PIN_AG19 -to VGA_G[4]
+set_location_assignment PIN_AG20 -to VGA_G[5]
+set_location_assignment PIN_AG21 -to VGA_B[0]
+set_location_assignment PIN_AA20 -to VGA_B[1]
+set_location_assignment PIN_AE22 -to VGA_B[2]
+set_location_assignment PIN_AF22 -to VGA_B[3]
+set_location_assignment PIN_AH23 -to VGA_B[4]
+set_location_assignment PIN_AH21 -to VGA_B[5]
+set_location_assignment PIN_AH22 -to VGA_HS
+set_location_assignment PIN_AG24 -to VGA_VS
+set_location_assignment PIN_AH27 -to VGA_EN
+set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to VGA_EN
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to VGA_*
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to VGA_*
+set_location_assignment PIN_AC24 -to AUDIO_L
+set_location_assignment PIN_AE25 -to AUDIO_R
+set_location_assignment PIN_AG26 -to AUDIO_SPDIF
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to AUDIO_*
+set_instance_assignment -name CURRENT_STRENGTH_NEW 8MA -to AUDIO_*
+set_location_assignment PIN_Y15 -to LED_USER
+set_location_assignment PIN_AA15 -to LED_HDD
+set_location_assignment PIN_AG28 -to LED_POWER
+set_location_assignment PIN_AH24 -to BTN_USER
+set_location_assignment PIN_AG25 -to BTN_OSD
+set_location_assignment PIN_AG23 -to BTN_RESET
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to LED_*
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to BTN_*
+set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to BTN_*
+
+set_global_assignment -name LAST_QUARTUS_VERSION "17.0.0 Lite Edition"
+set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
+set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
+set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
+set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
