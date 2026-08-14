@@ -1,69 +1,117 @@
-# Taito C-Chip Arcade Core for MiSTer FPGA
+# Rainbow Islands (MiSTer FPGA)
 
-An open-source, cycle-accurate MiSTer FPGA core targeting Taito C-Chip hardware. This core features native Z80 hardware sound synthesis, low-latency sprite rendering, dynamic pause overlays, and core-side CRT geometry controls.
+Hardware implementation of Taito’s **Rainbow Islands** (1987) for [MiSTer FPGA](https://mister-devel.github.io/MkDocs_MiSTer/).
 
----
+This is a chip-level reconstruction of the arcade board — not a high-level simulation of game behaviour. Each major custom on the PCB is its own HDL module, wired as on the original hardware.
 
-## 🎮 Supported Games
-
-Thanks to shared underlying Taito C-Chip hardware architecture (Motorola 68000 main CPU, Zilog Z80 sound CPU, YM2151 FM audio, and C-Chip protection MCU), this core runs the following titles via `.mra` files:
-
-| Game | Release | Board Architecture | MRA File Name |
-| :--- | :---: | :---: | :--- |
-| **Rainbow Islands: The Story of Bubble Bobble 2** | 1987 | Taito C-Chip | ` Rainbow Islands.mra` |
-| **Rainbow Islands Extra** | 1988 | Taito C-Chip | ` Rainbow Islands Extra.mra` |
-
-> ⚠️ **Note on MRA Filenames:** To prevent automated update scripts or third-party core updates from accidentally overwriting your local custom configuration files, custom MRA files are formatted with a **leading space** in the filename (e.g., ` Rainbow Islands.mra`).
+**Currently supported set:** `rbisland` (World, rev 2, set 1).
 
 ---
 
-## ⚠️ Important Setup Instructions for Rainbow Islands Extra
+## Hardware
 
-To get **Rainbow Islands Extra** running properly, you must manually extract the C-Chip MCU file from the Extra ROM zip and place it into the `cchip` folder:
+| Block | Implementation |
+|-------|----------------|
+| Main CPU | MC68000 @ 8 MHz (FX68K) |
+| Sound CPU | Z80 @ 4 MHz (T80) |
+| FM audio | YM2151 @ 4 MHz |
+| Sound mailbox | Taito PC060HA (CIU) |
+| Tile maps (BG + FG) | Taito PC080SN |
+| Sprites | Taito PC090OJ |
+| Protection / inputs | Taito C-chip (TC0030CMD / µPD78C11) |
 
-1. Locate `rbislande.zip` in your MAME ROM directory.
-2. Extract the C-Chip MCU file: **`c27-04.30`** (or `c27-04.bin`).
-3. Copy **`c27-04.30`** into your **`/games/mame/cchip/`** directory on your SD card.
+Video timing follows the measured Taito PC080SN path used on this board family (same family as Rastan): pixel clock ≈ 6.6715 MHz, frame rate ≈ 59.83 Hz. Suitable for HDMI scalers and CRTs.
 
-> **Why this is required:** *Rainbow Islands Extra* uses the base *Rainbow Islands* C-Chip MCU data. Placing this file in `/games/mame/cchip/` ensures the core properly initializes the protection hardware and avoids boot loops or game-over triggers.
+### C-chip
 
----
+Rainbow Islands uses a sealed NEC µPD78C11 microcontroller (the **C-chip**) for copy protection and player input handling. It runs a program; it is not a static lookup table.
 
-## ✨ Features & Hardware Improvements
+This core executes the genuine C-chip firmware on an HDL model of the µPD78C11 (`jttc0030cmd`, jotego, GPL-3.0). Both ROMs are required:
 
-* **Native Hardware Audio:** Native Z80 (`T80s`) + PC060HA CIU + YM2151 (`jt51`) execution path. Bus-level side-effects (mode pointers and status flags) are strobed strictly on the falling edge of chip select to prevent Z80 bus sample corruption.
-* **Optimized Line-Buffer Sprite Engine:** Burst SDRAM tile-row reads prevent scanline fetch starvation during high sprite density (e.g., multiple rainbows and enemy sprites on screen).
-* **Pause & Patreon Overlay:** Features system-wide clock enable gating (`ce_6m`, `ce_3m`) on pause. Active pause renders an OSD text window powered by an embedded $8 \times 8$ BRAM font ROM without disrupting video raster sync.
-* **Lagless CRT Geometry Control:** Core-side integration of `crt_adjust.sv` supports sub-pixel horizontal stretch/squeeze, horizontal content shift, and vertical line positioning without dropping sync or shifting the MiSTer main OSD menu.
-* **NVRAM & High Score Support:** Automatic saving of scores to `/media/fat/config/NVRAM/<game_id>.hi`.
+- **4 KB internal mask ROM** (`cchip_upd78c11.bin` in `cchip.zip`)
+- **8 KB game-specific EPROM** (e.g. `cchip_b22-15.53` inside `rbisland.zip`)
 
----
-
-## 🛠️ Installation & Setup
-
-1. Copy the core binary (`RainbowIslands_*.rbf`) to your MiSTer's `/_Arcade/cores/` directory.
-2. Place your MRA launch files in the `/_Arcade/` folder on your SD card.
-3. Place the required MAME ROM ZIP files (`rbisland.zip`, `rbislande.zip`) into your `/games/mame/` directory.
-4. Follow the **Rainbow Islands Extra** C-Chip file setup steps detailed above.
+PA / PB / PC bit packing follows MAME’s `rbisland.cpp` ioport map (cross-checked against jotego’s `jtrastan_cchip.v`).
 
 ---
 
-## 📜 Credits & Acknowledgments
+## Installation (MiSTer)
 
-This core incorporates open-source modules and technical contributions from the arcade preservation community:
+| File | Destination |
+|------|-------------|
+| `Rainbow Islands (World, rev 2, set 1) bazset.mra` | `/media/fat/_Arcade/` |
+| `Rbisland.rbf` | `/media/fat/_Arcade/cores/` |
+| `rbisland.zip` | `/media/fat/games/mame/` |
+| `cchip.zip` | `/media/fat/games/mame/` |
 
-* **Jorge Cwik (fx68k):** Cycle-accurate Motorola 68000 CPU core.
-* **Jose Tejada / JTFrame (jt51):** Cycle-accurate YM2151 FM Synthesis audio core.
-* **Daniel Wallner / MikeJ (T80):** Zilog Z80 CPU implementation.
-* **rmonic79:** [MiSTer-CRT-Adjust](https://github.com/rmonic79/MiSTer-CRT-Adjust) module (`crt_adjust.sv`) for lagless CRT alignment controls.
-* **Raki (IKA87AD):** Hardware schematics, logic analysis, and timing documentation.
-* **Sorgelig:** MiSTer framework & SDRAM infrastructure.
+Both zips are required. `rbisland.zip` must contain the game C-chip EPROM; `cchip.zip` supplies the shared mask ROM used by every C-chip game.
 
 ---
 
-## 🤝 Support & Community
+## Project layout
 
-If you'd like to follow along with ongoing development, report issues, or support hardware research for future arcade cores, check out the project links below:
+```
+Rbisland/
+├── rtl/              Core SystemVerilog (bus, video, sound glue, top)
+├── sys/              MiSTer framework / platform
+├── sound/            Sound-related helpers / scripts
+├── cfg/              Build / board config
+├── doc/  docs/       Notes and documentation
+├── tools/            Utilities
+├── sim/              Simulation (optional)
+├── releases/         Prebuilt RBF / MRA (optional)
+├── Rbisland.qpf/.qsf/.sdc/.sv
+├── build.bat  clean.bat  compare.bat
+├── LICENSE  README.md  TODO.md  KNOWN_ISSUES.md
+└── clean_for_upload.bat  clean_rbisland_dir.py
+```
 
-* **Patreon:** [https://www.patreon.com/c/bazset](https://www.patreon.com/c/bazset)
-* **Issues & Bug Reports:** Please use the GitHub Issues tracker for cycle-timing discrepancies, sound issues, or graphic regressions.
+Main RTL modules of interest:
+
+- `rbisland_top.sv` — top-level integration  
+- `rbisland_bus_decoder.sv` — 68000 map (`game_config.svh`)  
+- `pc080sn_layer_renderer.sv` — tile layers  
+- `pc090oj_renderer.sv` — sprites  
+- `pc060ha_ciu.sv` — 68000 ↔ Z80 mailbox  
+- `rbisland_cchip.sv` — C-chip glue around `jttc0030cmd`
+
+---
+
+## Building
+
+Open `Rbisland.qpf` in Quartus (or use your usual MiSTer core build flow).  
+`build.bat` / `clean.bat` are provided for local Windows builds.
+
+Before uploading or sharing the tree, double-click **`clean_for_upload.bat`**. It moves Quartus databases, `output_files`, logs, and other local clutter into a timestamped backup folder next to the project and leaves sources and project files in place. Python 3 must be on `PATH`.
+
+```bat
+clean_for_upload.bat
+```
+
+Or from a shell:
+
+```bat
+python clean_rbisland_dir.py . --dry-run
+python clean_rbisland_dir.py .
+```
+
+---
+
+## Credits and acknowledgements
+
+- **MAME** (`rbisland.cpp` and related Taito drivers) — memory map, ioport layout, and behaviour reference.  
+- **jotego** — `jttc0030cmd` C-chip model (GPL-3.0); video timing reference from the Rastan / JTRASTAN board family; `jtrastan_cchip.v` used as a cross-check for PA/PB/PC packing only.  
+- **FX68K**, **T80**, **JT51** (and other open cores used under their respective licenses).  
+- Arcade PCB measurements and public schematics for the Taito B-system / related boards.
+
+---
+
+## License
+
+See `LICENSE` in this repository. Third-party modules retain their own licenses (e.g. GPL for jotego’s C-chip model).
+
+ROM files are copyrighted by their respective owners and are **not** distributed with this project.
+
+---
+
+
