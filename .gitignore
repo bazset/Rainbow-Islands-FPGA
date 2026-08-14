@@ -1,0 +1,27 @@
+# Quartus / build
+db/
+incremental_db/
+output_files/
+*.sof
+*.pof
+*.rbf
+*.rpt
+*.done
+*.qws
+*.summary
+*.smsg
+*.jdi
+*.pin
+*.srf
+# Simulation
+transcript
+modelsim.ini
+*.vcd
+*.wlf
+*.cr.mti
+work/
+# Local / editor
+.claude/
+*.bak
+*.orig
+*~
