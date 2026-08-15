@@ -44,7 +44,7 @@ PA / PB / PC bit packing follows MAME’s `rbisland.cpp` ioport map (cross-check
 
 | File | Destination |
 |------|-------------|
-| `Rainbow Islands (World, rev 2, set 1) bazset.mra` | `/media/fat/_Arcade/` |
+| `Rainbow Islands (World, rev 2, set 1)` | `/media/fat/_Arcade/` |
 | `Rbisland.rbf` | `/media/fat/_Arcade/cores/` |
 | `rbisland.zip` | `/media/fat/games/mame/` |
 | `cchip.zip` | `/media/fat/games/mame/` |
