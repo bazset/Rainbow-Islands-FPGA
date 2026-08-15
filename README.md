@@ -5,8 +5,9 @@ Hardware implementation of Taito’s **Rainbow Islands** (1987) for [MiSTer FPGA
 
 This is a chip-level reconstruction of the arcade board — not a high-level simulation of game behaviour. Each major custom on the PCB is its own HDL module, wired as on the original hardware.
 
-**Currently supported set:** `rbisland` (World, rev 2, set 1).
-
+Currently Supported Sets:
+Rainbow Islands (World, rev 2, set 1)
+Rainbow Islands - Extra Version
 ---
 
 ## Hardware
@@ -57,14 +58,10 @@ Rbisland/
 ├── sys/              MiSTer framework / platform
 ├── sound/            Sound-related helpers / scripts
 ├── cfg/              Build / board config
-├── doc/  docs/       Notes and documentation
-├── tools/            Utilities
-├── sim/              Simulation (optional)
-├── releases/         Prebuilt RBF / MRA (optional)
 ├── Rbisland.qpf/.qsf/.sdc/.sv
 ├── build.bat  clean.bat  compare.bat
-├── LICENSE  README.md  TODO.md  KNOWN_ISSUES.md
-└── clean_for_upload.bat  clean_rbisland_dir.py
+├── LICENSE  README.md
+└── clean_for_upload.bat
 ```
 
 Main RTL modules of interest:
@@ -97,14 +94,13 @@ python clean_rbisland_dir.py .
 ```
 
 ---
-
 ## Credits and acknowledgements
 
 - **MAME** (`rbisland.cpp` and related Taito drivers) — memory map, ioport layout, and behaviour reference.  
 - **jotego** — `jttc0030cmd` C-chip model (GPL-3.0); video timing reference from the Rastan / JTRASTAN board family; `jtrastan_cchip.v` used as a cross-check for PA/PB/PC packing only.  
-- **FX68K**, **T80**, **JT51** (and other open cores used under their respective licenses).  
+- **FX68K**, **T80**, **JT51** (and other open cores used under their respective licenses).
+- **rmonic79** — Creator of [MiSTer-CRT-Adjust](https://github.com/rmonic79/MiSTer-CRT-Adjust)
 - Arcade PCB measurements and public schematics for the Taito B-system / related boards.
-
 ---
 
 ## License
