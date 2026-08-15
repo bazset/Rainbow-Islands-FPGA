@@ -5,10 +5,11 @@ Hardware implementation of Taito’s **Rainbow Islands** (1987) for [MiSTer FPGA
 
 This is a chip-level reconstruction of the arcade board — not a high-level simulation of game behaviour. Each major custom on the PCB is its own HDL module, wired as on the original hardware.
 
-Currently Supported Sets:
-Rainbow Islands (World, rev 2, set 1)
-Rainbow Islands - Extra Version
----
+
+### Currently Supported Sets
+
+- **Rainbow Islands** (*World, rev 2, set 1*)
+- **Rainbow Islands - Extra Version**
 
 ## Hardware
 
