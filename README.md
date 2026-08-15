@@ -81,7 +81,7 @@ Main RTL modules of interest:
 
 - **Jorge Cwik (ijor)** for the cycle-accurate **FX68K** 68000 CPU core.
 - **Daniel Wallner** for the foundational **T80** Z80 CPU core.
-- **Jose Tejada Gómez (jotego)** for the **JT51** (YM2151 FM synth) core, the `jttc0030cmd` C-chip wrapper, and the **CRT adjust core** (`jtframe_resync`) for video positioning.
+- **Jose Tejada Gómez (jotego)** for the **JT51** (YM2151 FM synth) core, the `jttc0030cmd` C-chip wrapper
 - **ika-musume** for the **IKA87AD** microcontroller core used inside the C-chip implementation.
 - **Alexey Melnikov (Sorgelig)** for the MiSTer **SDRAM controller** (`sdram.sv`).
 - **MAME Dev Team** for the reference driver implementation (`rbisland.cpp` / `taito.cpp`) that made memory mapping, custom chip behavior, and bus logic analysis possible.
