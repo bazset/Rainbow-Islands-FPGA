@@ -1,17 +1,13 @@
 
-# Rainbow Islands (MiSTer FPGA) by bazset
-
-Support my work and follow development updates on [Patreon](https://www.patreon.com/cw/bazset)!
+# Rainbow Islands (MiSTer FPGA)
 
 Hardware implementation of Taito’s **Rainbow Islands** (1987) for [MiSTer FPGA](https://mister-devel.github.io/MkDocs_MiSTer/).
 
 This is a chip-level reconstruction of the arcade board — not a high-level simulation of game behaviour. Each major custom on the PCB is its own HDL module, wired as on the original hardware.
 
+**Currently supported set:** `rbisland` (World, rev 2, set 1).
 
-### Currently Supported Sets
-
-- **Rainbow Islands** (*World, rev 2, set 1*)
-- **Rainbow Islands - Extra Version**
+---
 
 ## Hardware
 
@@ -44,13 +40,12 @@ PA / PB / PC bit packing follows MAME’s `rbisland.cpp` ioport map (cross-check
 
 | File | Destination |
 |------|-------------|
-| `Rainbow Islands (World, rev 2, set 1)` | `/media/fat/_Arcade/` |
+| `Rainbow Islands (World, rev 2, set 1) bazset.mra` | `/media/fat/_Arcade/` |
 | `Rbisland.rbf` | `/media/fat/_Arcade/cores/` |
 | `rbisland.zip` | `/media/fat/games/mame/` |
 | `cchip.zip` | `/media/fat/games/mame/` |
 
-* **`cchip.zip`**: Must contain `cchip_mcu.bin` (the shared C-chip mask ROM used across all C-chip games)
-* **`rbisland.zip`** (or **`rbislande.zip`** for the *Extra* version): Must contain the game-specific C-chip EPROM (`cchip_eeprom.bin`)
+Both zips are required. `rbisland.zip` must contain the game C-chip EPROM; `cchip.zip` supplies the shared mask ROM used by every C-chip game.
 
 ---
 
@@ -62,9 +57,14 @@ Rbisland/
 ├── sys/              MiSTer framework / platform
 ├── sound/            Sound-related helpers / scripts
 ├── cfg/              Build / board config
+├── doc/  docs/       Notes and documentation
+├── tools/            Utilities
+├── sim/              Simulation (optional)
+├── releases/         Prebuilt RBF / MRA (optional)
 ├── Rbisland.qpf/.qsf/.sdc/.sv
 ├── build.bat  clean.bat  compare.bat
-└── LICENSE  README.md
+├── LICENSE  README.md  TODO.md  KNOWN_ISSUES.md
+└── clean_for_upload.bat  clean_rbisland_dir.py
 ```
 
 Main RTL modules of interest:
@@ -77,16 +77,34 @@ Main RTL modules of interest:
 - `rbisland_cchip.sv` — C-chip glue around `jttc0030cmd`
 
 ---
+
+## Building
+
+Open `Rbisland.qpf` in Quartus (or use your usual MiSTer core build flow).  
+`build.bat` / `clean.bat` are provided for local Windows builds.
+
+Before uploading or sharing the tree, double-click **`clean_for_upload.bat`**. It moves Quartus databases, `output_files`, logs, and other local clutter into a timestamped backup folder next to the project and leaves sources and project files in place. Python 3 must be on `PATH`.
+
+```bat
+clean_for_upload.bat
+```
+
+Or from a shell:
+
+```bat
+python clean_rbisland_dir.py . --dry-run
+python clean_rbisland_dir.py .
+```
+
+---
+
 ## Credits and acknowledgements
 
-- **Jorge Cwik (ijor)** for the cycle-accurate **FX68K** 68000 CPU core.
-- **Daniel Wallner** for the foundational **T80** Z80 CPU core.
-- **Jose Tejada Gómez (jotego)** for the **JT51** (YM2151 FM synth) core, the `jttc0030cmd` C-chip wrapper
-- **ika-musume** for the **IKA87AD** microcontroller core used inside the C-chip implementation.
-- **Alexey Melnikov (Sorgelig)** for the MiSTer **SDRAM controller** (`sdram.sv`).
-- **MAME Dev Team** for the reference driver implementation (`rbisland.cpp` / `taito.cpp`) that made memory mapping, custom chip behavior, and bus logic analysis possible.
-- **rmonic79** — Creator of [MiSTer-CRT-Adjust](https://github.com/rmonic79/MiSTer-CRT-Adjust)
+- **MAME** (`rbisland.cpp` and related Taito drivers) — memory map, ioport layout, and behaviour reference.  
+- **jotego** — `jttc0030cmd` C-chip model (GPL-3.0); video timing reference from the Rastan / JTRASTAN board family; `jtrastan_cchip.v` used as a cross-check for PA/PB/PC packing only.  
+- **FX68K**, **T80**, **JT51** (and other open cores used under their respective licenses).  
 - Arcade PCB measurements and public schematics for the Taito B-system / related boards.
+
 ---
 
 ## License
