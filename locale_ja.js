@@ -1,0 +1,50 @@
+window.PCB_JA = {
+ui: {
+ title:"レインボーアイランド PCB エクスプローラー",
+ intro:"タイトー『レインボーアイランド』の実機基板を探索。各チップの役割、回路資料、MiSTer FPGA での対応モジュールを紹介します。",
+ language:"言語",readOnly:"閲覧専用の技術資料",boardRevision:"エクストラ版の回路図は別基板リビジョンです",
+ board:"実機 PCB 写真",front:"部品面",back:"はんだ面",zoom:"拡大率",
+ search:"チップ・信号・ソース名で検索…",all:"すべての種類",legend:"実線の枠は写真で確認できる部品、破線は位置が推定の領域です。はんだ面の配線は未検証のため重ね表示していません。",
+ photoCredit:"PCB写真提供：Benさん。貴重な写真をありがとうございます！",
+ circuits:"回路図・参考資料",references:"参考資料",footer:"BAZSET 基板調査 · 実機 B22 の部分回路資料と、別リビジョンの参考回路図を明確に区別しています。完全に検証済みのネットリストではありません。",
+ noResults:"該当する項目がありません。",about:"機能",addr:"メモリー / I/O アドレス",focus:"調査ポイント",
+ source:"対応する FPGA ソースモジュール（ファイル名のみ）",evidence:"配置の確度",confirmed:"実機写真の刻印から確認",romLabel:"ROM ラベルから確認",approx:"推定位置：実機との照合が必要",
+ related:"関連する基板回路資料",hardware:"関連部品",check:"FPGA で確認したい点",caution:"根拠・注意点",
+ original:"実機 B22 回路資料",donor:"別リビジョンの参考資料",read:"資料を開く ↗",noFull:"K1100277A の完全な回路図は未確認です。",
+ present:"表示中",chipCount:"件の部品・領域",circuitSource:"資料へのリンク",backInfo:"はんだ面に部品枠を表示しないのは、未確認の電気接続を誤って示さないためです。",
+ noteRTL:"公開ページでは開発中のソースコード本文を公開していません。ここでは関連するモジュール名だけを示します。",
+ types:{"CPU":"CPU","Graphics":"グラフィックス","Audio":"音声","ROM":"ROM","Memory":"メモリー","Control":"制御・入力","Video":"映像","I/O":"入出力","Timing":"タイミング"},
+ statuses:{"B22 partial traced":"B22 実機の部分配線図","B22 contextual / partial":"B22 資料・部分情報","B22 source + repair observation":"B22 資料・修理事例","Cross-board donor only":"別基板の参考資料","Different board revision / reference only":"別リビジョンの参考資料"}
+},
+nodes: {
+cpu68k:{name:"68000 メイン CPU",role:"ゲーム全体を制御する Motorola 68000。16 MHz 発振器から分周した実機クロックは 8 MHz。",priority:"バス待ち・割り込みのタイミングを照合"},
+tile:{name:"PC080SN（タイル描画）",role:"背景と前景のタイルレイヤー、スクロールを生成するタイトー製カスタムチップ。",priority:"ピクセル順・描画期限・レイヤー優先順位"},
+sprites:{name:"PC090OJ（スプライト）",role:"スプライト属性と描画を制御し、2018 型 SRAM と連携するカスタムチップ。",priority:"実機特有のスプライトちらつきと読み出し帯域"},
+cchip:{name:"TC0030CMD C-chip",role:"入力処理・ゲーム保護などに関係する専用 MCU。B22-15 は標準版固有のプログラム。",priority:"セーブステート用の安全な MCU 停止境界"},
+ciu:{name:"PC060HA（音声通信）",role:"68000 とサウンド用 Z80 のコマンド通信・ハンドシェイクを担当。",priority:"サウンド通信の保存・復元タイミング"},
+z80:{name:"Z80 サウンド CPU",role:"サウンドプログラムと ROM バンクを処理する 4 MHz の Z80。",priority:"音声 CPU の状態保存と安全な停止"},
+ym2151:{name:"YM2151 FM 音源",role:"FM 音声を生成する Yamaha YM2151。音楽の再現に重要。",priority:"JT51 の位相・エンベロープ状態の完全保存"},
+ym3012:{name:"YM3012 DAC",role:"元の基板では FM 音源をアナログ音声に変換。FPGA ではデジタル音声として再現。",priority:"アナログ回路とデジタル音声との差異"},
+amp:{name:"音声アンプ MB3735",role:"アーケード筐体のスピーカーを駆動する出力アンプ。",priority:"音量・クリッピングなど実機との比較"},
+rom10:{name:"B22-10 メイン ROM",role:"標準版の 68000 用プログラム ROM。エクストラ版とは内容が異なります。",priority:"ワールド/エクストラの ROM 識別"},
+rom08:{name:"B22-08 メイン ROM",role:"標準版の 68000 用プログラム ROM。",priority:"ROM 配列とプログラム識別"},
+rom11:{name:"B22-11 メイン ROM",role:"標準版の 68000 用プログラム ROM。",priority:"ROM 配列とプログラム識別"},
+rom09:{name:"B22-09 メイン ROM",role:"標準版の 68000 用プログラム ROM。",priority:"ROM 配列とプログラム識別"},
+romgfx:{name:"B22 グラフィックス ROM 群",role:"タイルやスプライトのデータを格納する ROM 領域。各チップの正確な位置は今後の確認が必要。",priority:"ROM のデータ順・バス幅・実機位置"},
+sprite_ram:{name:"スプライト SRAM 群",role:"2018 型 SRAM 群。領域の位置は概算で、個別 IC の確認が必要。",priority:"スプライト RAM へのアクセス競合"},
+tile_ram:{name:"タイル SRAM 群",role:"MAME で記載される 43256 型 SRAM。実機の個別配置は未確定。",priority:"負荷時のタイルデータ読み出し"},
+rgb:{name:"色 RAM・RGB 合成回路",role:"パレット RAM と TC0070RGB に関連する色合成領域。位置は未確定。",priority:"色データの順序と RGB 出力"},
+pad:{name:"DIP スイッチ・入力系",role:"DSWA / DSWB とコントローラー入力系。位置は概算。",priority:"Buffalo Classic ゲームパッドの実機動作確認"},
+jamma:{name:"JAMMA 端子",role:"アーケード筐体につながる電源・入力・映像・音声のエッジコネクター。",priority:"制御・同期・音声の実機比較"},
+xtal:{name:"クロック発振器領域",role:"実機資料に 26.68599 MHz、16 MHz、12 MHz の発振器が記録されています。位置と配線は要確認。",priority:"60.0559 Hz の実機映像タイミングの照合"}
+},
+circuits:{
+b22clock:{title:"B22：16 MHz CPU／音声クロック分周",summary:"実機の 16 MHz 発振器から 8 MHz の 68000 と 4 MHz の Z80 へ分周。PC060HA にも関連クロックが送られます。",caution:"B22 実機を調査した記事に基づく記載です。写真だけではすべての配線を独立検証できません。",checks:["メイン CPU の 8 MHz 相当動作","Z80 の 4 MHz 相当動作","PC060HA のクロックと通信境界"]},
+b22cchipclock:{title:"B22：12 MHz C-chip クロック",summary:"12 MHz 発振器が IC54 の反転回路を通り、TC0030CMD のクロック入力ピン 20 に接続されます。",caution:"B22 実機資料からの部分配線情報。",checks:["C-chip の 12 MHz 相当クロック","C-chip 割り込みと命令境界"]},
+b22watchdog:{title:"B22：ウォッチドッグ・リセット回路",summary:"MB3771、PAL B22-07、74393 カウンタなどで構成。VBLANK を数え、特定のアドレスへの書き込みでウォッチドッグを解除します。",caution:"アドレスデコードと VBLANK カウントの実装は確認済みですが、リセット信号の接続と周期は未検証です。",checks:["0x3C0000–0x3DFFFF のデコードは RTL と一致","VBLANK の立ち上がりによるカウントを実装済み","タイムアウトを実機と同じリセットへ接続するには追加検証が必要"]},
+b22cchip:{title:"B22：C-chip の入力・保護機能",summary:"MAME の TC0030CMD 情報により、C-chip の基本的な入出力とメモリーマップを確認できます。完全な B22 基板回路図ではありません。",caution:"チップ共通の情報であり、基板全体の配線が確定したわけではありません。",checks:["コントローラー入力から C-chip への経路","割り込みとコイン制御"]},
+b22sprite:{title:"B22：PC090OJ とスプライト SRAM",summary:"実機修理記事では、PC090OJ 周辺に四つの 2018 SRAM があると説明されています。",caution:"スプライトのちらつき発生条件と処理量は未確定です。",checks:["スプライト RAM と描画処理の競合","負荷の高い場面での描画制限の実測"]},
+b22analog:{title:"FM 音源・DAC・アナログ出力",summary:"YM2151、YM3012、PC060HA 等を理解するための参考回路。ただし元の回路図は Cadash 用です。",caution:"Rainbow Islands では IC 番号やゲート配線が異なるため、同一回路として扱えません。",checks:["FM 音源の完全な状態保存","実機のアナログ音声と FPGA デジタル音声の違い"]},
+jotego:{title:"Jotego の Extra 版 KiCad 回路図",summary:"Ulf Skutnabba による Rainbow Islands Extra の KiCad 回路図。基板番号は K1100319A です。",caution:"今回の写真に写る K1100277A とは別リビジョン。対応を確認するまで同じ接続と断定しません。",checks:["各 IC の機能・端子数を両版で比較","ROM・端子・部品番号の差異を調査"]}
+}
+};
