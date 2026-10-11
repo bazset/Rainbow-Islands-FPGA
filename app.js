@@ -15,6 +15,10 @@ const EN={
  photoDiff:"The 2008 photograph appears to have a small daughterboard at the upper right. This does not establish the same board revision, ROM population, chip positions or wiring as Ben’s board.",
  commonsSource:"Original Wikimedia Commons photo and licence ↗",
  circuits:"Circuit references",references:"Reference sources",
+ donorTitle:"Explore Extra K1100319A KiCad parts and signals",donorWarning:"Different board: these designators and signals belong to the Extra K1100319A schematic, NOT a verified K1100277A B22 wiring diagram.",
+ donorHelp:"Browse sheet-level component values and named signal labels. These names do NOT prove individual pin connections.",donorComponents:"Schematic components",donorSignals:"Named signals / ports",
+ donorCredit:"Source: Ulf Skutnabba (@skutis77), Jotego / KiCad, Rainbow Islands Extra K1100319A.",donorOpenSource:"Open original KiCad schematics ↗",donorAll:"All 8 sheets",donorSearch:"Search ICs, values and signals…",donorShown:"shown",donorFound:"found",donorPartsCount:"parts",donorSignalsCount:"signals",donorNone:"No matches. Try another sheet or keyword.",
+ donorPageTitles:{risle:"Project overview",cpu_main:"Main CPU and memory",sprites:"Sprite circuitry",tile_layers:"Tile layers and scrolling",color_mixer:"Colour mixing",sound:"Sound circuitry",io:"Inputs and outputs",misc:"Miscellaneous logic"},
  footer:"BAZSET hardware research · Partial original-board drawings and separately identified donor schematics; not a complete verified netlist.",
  noResults:"No matching items found.",about:"Function",addr:"Memory / I/O address",focus:"Research priority",
  source:"Relevant FPGA source modules (names only)",evidence:"Location confidence",
@@ -85,7 +89,7 @@ function setLanguage(){
  $("category").setAttribute("aria-label",t("all"));
  $("closeDetail").setAttribute("aria-label",t("closeDetails"));
  $("closeDetail").title=t("closeDetails");
- renderCats();renderLists();renderDetail();renderMap();
+ renderCats();renderLists();renderDetail();renderMap();fillDonorPages();
 }
 function renderCats(){
  const current=state.cat;
@@ -162,11 +166,51 @@ function renderDetail(){
  $("detail").innerHTML=html;
  $("detail").querySelectorAll("button[data-kind]").forEach(b=>b.addEventListener("click",menu));
 }
+
+/* Reference-only KiCad inventory for the DIFFERENT Extra K1100319A board.
+ * Never infer pin-to-net or photograph placements from this list. */
+const donor=window.PCB_DONOR_INDEX;
+function renderDonor() {
+ const panel=$("donorDetails");
+ if(!donor?.pages?.length){panel.hidden=true;return;}
+ const chosen=$("donorPage").value||"all", q=$("donorSearch").value.trim().toLocaleLowerCase();
+ const sheets=donor.pages.filter(p=>chosen==="all"||p.key===chosen);
+ const matches=(values)=>!q||values.join(" ").toLocaleLowerCase().includes(q);
+ const comps=sheets.flatMap(p=>p.parts.filter(c=>matches([c.ref,c.value,c.library,p.title,p.key])).map(c=>({...c,page:p})));
+ const signals=sheets.flatMap(p=>p.signals.filter(s=>matches([s,p.title,p.key])).map(s=>({name:s,page:p,port:p.ports.includes(s)})));
+ const display=(n)=>t("donorPageTitles")[n.key]||n.title;
+ const capParts=65,capSignals=80;
+ $("donorStats").textContent=comps.length+" "+t("donorPartsCount")+" · "+signals.length+" "+t("donorSignalsCount")+" · "+t("donorShown")+" "+Math.min(comps.length,capParts)+"/"+comps.length+" / "+Math.min(signals.length,capSignals)+"/"+signals.length;
+ const nothing='<span class="small">'+escape(t("donorNone"))+'</span>';
+ $("donorParts").innerHTML=comps.length?comps.slice(0,capParts).map(c=>
+  '<div class="donor-part"><b>'+escape(c.ref)+'</b><code>'+escape(c.value)+'</code>'+
+  (chosen==="all"?'<br><span>'+escape(display(c.page))+'</span>':'')+
+  ' <a href="'+escape(c.page.source)+'" target="_blank" rel="noopener noreferrer" aria-label="'+escape(c.ref+' KiCad source')+'">↗</a></div>'
+ ).join(""):nothing;
+ $("donorSignals").innerHTML=signals.length?signals.slice(0,capSignals).map(s=>
+  '<span class="donor-signal" title="'+escape(display(s.page)+(s.port?" · Sheet port":" · Signal label"))+'">'+
+  escape(s.name)+(s.port?' ↔':'')+'</span>'
+ ).join(" "):nothing;
+ $("donorSourceLink").href=chosen==="all"?donor.source:sheets[0].source;
+}
+function fillDonorPages(){
+ if(!donor?.pages?.length)return;
+ const select=$("donorPage"),before=select.value||"all";
+ select.innerHTML='<option value="all">'+escape(t("donorAll"))+'</option>'+
+   donor.pages.map(p=>'<option value="'+escape(p.key)+'">'+escape(t("donorPageTitles")[p.key]||p.title)+'</option>').join("");
+ select.value=before;
+ $("donorSearch").placeholder=t("donorSearch");
+ $("donorSearch").setAttribute("aria-label",t("donorSearch"));
+ renderDonor();
+}
+
 function renderRefs(){
  $("references").innerHTML=DATA.references.map(r=>"<div class='source'>"+link(r.url,r.title)+"</div>").join("")+
  "<div class='source'>"+link("https://commons.wikimedia.org/wiki/File:Rainbow_Islands_PCB.jpg",t("commonsSource"))+" · Noggin73 (2008, public domain)</div>"+
  "<p class='note'>"+escape(t("noFull"))+"</p>";
 }
+$("donorPage").addEventListener("change",renderDonor);
+$("donorSearch").addEventListener("input",renderDonor);
 $("closeDetail").addEventListener("click",()=>closeSheet());
 $("sheetBackdrop").addEventListener("click",()=>closeSheet());
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&document.body.classList.contains("sheet-open")){e.preventDefault();closeSheet();}});
@@ -190,4 +234,5 @@ $("zoom").addEventListener("input",e=>{state.scale=+e.target.value;renderMap()})
 $("search").addEventListener("input",e=>{state.search=e.target.value;renderLists();renderMap()});
 $("category").addEventListener("change",e=>{state.cat=e.target.value;renderLists();renderMap()});
 setLanguage();renderRefs();
+if(location.hash==="#donorDetails"&&donor?.pages?.length){$("donorDetails").open=true;}
 })();

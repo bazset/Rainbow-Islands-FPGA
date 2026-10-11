@@ -98,6 +98,23 @@ footer{text-align:center;font-size:12px;color:var(--muted);border-top:1px solid 
 .comparison-card figcaption{margin:9px 0 0;color:var(--muted);font-size:12px;line-height:1.5}
 .comparison-notes{margin:9px 0 13px;border-left:3px solid var(--gold);background:#282d2b;padding:10px 12px;font-size:13px;color:#f1e4c9;border-radius:4px}
 .comparison-notes p{margin:0 0 9px}.comparison-notes a{font-weight:600}
+/* Extra KiCad inventory is a separate, provenance-labelled board revision. */
+.donor-inventory summary{cursor:pointer;font-size:17px;font-weight:700;color:var(--mint);padding:8px 0;line-height:1.45}
+.donor-inventory summary:focus-visible{outline:2px solid var(--mint)}
+.donor-controls{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:14px 0}
+.donor-controls select,.donor-controls input{min-width:0;width:100%;font-size:15px;min-height:44px}
+.donor-results{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.donor-results section{min-width:0}
+.donor-results h3{font-size:14px;line-height:1.4}
+.donor-scroll{max-height:315px;min-height:70px;overflow-y:auto;overscroll-behavior:contain;border:1px solid var(--edge);border-radius:8px;padding:7px;background:#0c252d}
+.donor-part{padding:7px;border-bottom:1px solid #37545e;font-size:13px;overflow-wrap:anywhere}
+.donor-part:last-child{border-bottom:0}
+.donor-part b{color:var(--mint);font-size:14px;margin-right:6px}
+.donor-part span{color:var(--muted);font-size:12px}
+.donor-signal{display:inline-block;font-size:12px;padding:3px 7px;border:1px solid #3a616b;margin:2px;border-radius:5px;color:#dbf5ed;overflow-wrap:anywhere}
+.donor-evidence{border-left:3px solid var(--gold);padding:8px 12px;color:#ffefca;background:#292c27;margin:12px 0}
+.donor-small{font-size:12px;color:var(--muted)}
+@media(max-width:700px){.donor-results,.donor-controls{grid-template-columns:1fr}.donor-scroll{max-height:250px}.donor-inventory summary{font-size:16px}}
 @media(max-width:720px){
  .compare-view{grid-template-columns:1fr;gap:8px}
  .comparison-card img{max-height:none}
@@ -111,9 +128,18 @@ footer{text-align:center;font-size:12px;color:var(--muted);border-top:1px solid 
 <div class="controls"><input type="search" id="search" placeholder="Search components, signals, files…" autocomplete="off"><select id="category" aria-label="Category"></select></div></div>
 <div class="mapview" id="mapView"><div class="board" id="boardImage"><img id="pcbPhoto" src="front.webp" alt="Rainbow Islands arcade PCB front"></div><div id="compareView" class="compare-view" hidden><figure class="comparison-card"><img src="front.webp" loading="eager" alt="Ben’s Rainbow Islands PCB, component side"><figcaption data-t="compareBen">Ben’s PCB photograph — our interactive board reference</figcaption></figure><figure class="comparison-card"><a href="commons_2008.jpg" target="_blank" rel="noopener noreferrer"><img src="commons_2008.jpg" loading="eager" alt="Rainbow Islands arcade PCB photograph by Noggin73, 2008"></a><figcaption data-t="compareCommons">Noggin73’s 2008 Wikimedia Commons photograph (public domain). Tap to enlarge.</figcaption></figure></div></div>
 <div class="legend"><div data-t="legend">Solid markers = marked components. Dashed markers = estimated regions. Back-side nets are not electrically verified.</div><p class="photo-credit" data-t="photoCredit">PCB photographs generously provided by Ben. Thank you, Ben!</p><div class="comparison-notes" id="comparisonNotes" hidden><p data-t="archiveFacts">Historical reference: photographed by Noggin73, uploaded 24 January 2008, 1,280 × 848 pixels; released into the public domain.</p><p data-t="photoDiff">The archive photo appears to include a small upper-right daughterboard. Do not transfer component positions or net connections to Ben’s board without verification.</p><a href="https://commons.wikimedia.org/wiki/File:Rainbow_Islands_PCB.jpg" target="_blank" rel="noopener noreferrer" data-t="commonsSource">View original Wikimedia Commons file and licence ↗</a></div><div class="chipList" id="chips"></div></div>
-<div class="section"><h2 data-t="circuits">Circuit references</h2><div class="chipList" id="circuits"></div></div></section>
+<div class="section"><h2 data-t="circuits">Circuit references</h2><div class="chipList" id="circuits"></div></div>
+<div class="section donor-inventory" id="donorSection"><details id="donorDetails"><summary data-t="donorTitle">Explore Extra K1100319A KiCad parts and signals</summary>
+<p class="donor-evidence" data-t="donorWarning">Different board: these designators and signals belong to the Extra K1100319A schematic, NOT a verified K1100277A B22 wiring diagram.</p>
+<p class="donor-small" data-t="donorHelp">Browse sheet-level component values and named signal labels. Listed labels do not prove specific pin connections.</p>
+<div class="donor-controls"><select id="donorPage" aria-label="KiCad schematic sheet"><option value="all">All eight sheets</option></select><input id="donorSearch" type="search" autocomplete="off" placeholder="Search ICs, values or signals…" aria-label="Search Extra schematic labels"></div>
+<p class="donor-small" id="donorStats" aria-live="polite"></p>
+<div class="donor-results"><section><h3 data-t="donorComponents">Components</h3><div id="donorParts" class="donor-scroll"></div></section><section><h3 data-t="donorSignals">Named signals and ports</h3><div id="donorSignals" class="donor-scroll"></div></section></div>
+<p class="donor-small" data-t="donorCredit">Source: Ulf Skutnabba (@skutis77), Jotego / KiCad, Rainbow Islands Extra K1100319A.</p>
+<a id="donorSourceLink" href="https://github.com/jotego/jtcores/tree/master/cores/rastan/sch/risle" target="_blank" rel="noopener noreferrer" data-t="donorOpenSource">Open original KiCad schematics ↗</a>
+</details></div></section>
 <section class="panel" id="detailPanel"><div class="panelhead"><button type="button" id="closeDetail" class="close-detail" aria-label="Close chip details">×</button><h2 id="detailTitle">Rainbow Islands</h2><div class="small" id="detailSub"></div></div><div class="details" id="detail"></div>
 <div class="section"><h2 data-t="references">Reference sources</h2><div id="references"></div></div></section></main>
 <div id="sheetBackdrop" class="sheet-backdrop" aria-hidden="true"></div><footer data-t="footer">BAZSET hardware research · Partial original-board drawings and separately identified donor schematics; not a complete verified netlist.</footer>
-<script src="./site_data.js"></script><script src="./locale_ja.js?v=commons-reference-20261011"></script><script src="./app.js?v=commons-reference-20261011"></script>
+<script src="./site_data.js"></script><script src="./donor_index.js"></script><script src="./locale_ja.js?v=donor-index-20261011"></script><script src="./app.js?v=donor-index-20261011"></script>
 </body></html>
