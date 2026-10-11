@@ -28,17 +28,77 @@ code{background:#1c3c45;color:#e1f5ee;padding:2px 5px;border-radius:4px;overflow
 footer{text-align:center;font-size:12px;color:var(--muted);border-top:1px solid var(--edge);padding:22px;margin-top:12px}
 @media(max-width:920px){main{grid-template-columns:1fr}.mapview{height:520px}}
 @media(max-width:500px){main{padding:10px;gap:10px}header{padding:16px}.panelhead{padding:12px}.details{padding:13px}.mapview{height:360px;min-height:280px;padding:6px}.headerrow{gap:8px}}
+
+/* Responsive component inspector: normal reference panel on desktop, readable sheet on phone. */
+.mobile-hint,.close-detail,.sheet-backdrop{display:none}
+.mobile-hint{font-size:13px;color:var(--muted);margin:0 0 12px}
+#detailPanel .panelhead{position:relative}
+@media(max-width:920px){
+ .mobile-hint{display:block}
+ body.sheet-open{overflow:hidden;touch-action:pan-y}
+ .sheet-backdrop{position:fixed;inset:0;z-index:1000;background:rgba(2,11,17,.66)}
+ body.sheet-open .sheet-backdrop{display:block}
+ #detailPanel{
+  position:fixed;z-index:1001;inset:auto 0 0;display:block;
+  height:min(84vh,790px);height:min(84dvh,790px);max-height:calc(100vh - 16px);
+  overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+  border-radius:22px 22px 0 0;border:1px solid #50838a;border-bottom:0;
+  background:#102931;box-shadow:0 -10px 40px rgba(0,0,0,.50);
+  visibility:hidden;pointer-events:none;transform:translateY(105%);
+  transition:transform .22s ease,visibility .22s;
+ }
+ body.sheet-open #detailPanel{visibility:visible;pointer-events:auto;transform:translateY(0)}
+ #detailPanel .panelhead{
+  position:sticky;top:0;z-index:2;padding:21px 66px 16px 18px;
+  background:#173941;border-bottom:1px solid #507980;
+  box-shadow:0 3px 15px #07161a66;
+ }
+ #detailPanel .panelhead::before{
+  content:"";position:absolute;top:7px;left:calc(50% - 19px);
+  width:38px;height:4px;border-radius:8px;background:#74939b
+ }
+ #detailPanel #detailTitle{font-size:clamp(20px,5vw,27px);line-height:1.22;margin:0 0 8px;overflow-wrap:anywhere}
+ #detailPanel #detailSub{font-size:13px;line-height:1.35}
+ #detailPanel .close-detail{
+  display:flex;position:absolute;right:12px;top:18px;
+  justify-content:center;align-items:center;width:45px;height:45px;
+  padding:0;border:1px solid #80adae;border-radius:50%;
+  background:#31555e;color:#fff;font-size:31px;line-height:1;
+ }
+ #detailPanel .details{min-height:0;padding:14px 19px 16px;font-size:16px;line-height:1.65}
+ #detailPanel .details h3{color:var(--mint);font-size:14px;letter-spacing:.015em;margin:18px 0 5px}
+ #detailPanel .details h3:first-child{margin-top:0}
+ #detailPanel .details p{margin:6px 0 12px}
+ #detailPanel .details ul{padding-left:22px}
+ #detailPanel .details li{margin-bottom:10px}
+ #detailPanel .details .tag{font-size:12px;padding:5px 9px;line-height:1.35}
+ #detailPanel .details .chipList button{min-height:44px;padding:9px 12px;font-size:14px;text-align:left}
+ #detailPanel .details .note{font-size:15px;line-height:1.55}
+ #detailPanel .details code{font-size:14px;line-height:1.5;white-space:normal;overflow-wrap:anywhere}
+ #detailPanel .section{padding:14px 19px max(30px,env(safe-area-inset-bottom));}
+ #detailPanel .section h2{font-size:17px}
+ #detailPanel .source{font-size:14px;padding:11px 12px}
+ #chips button,#circuits button{min-height:44px;font-size:14px;padding:8px 11px;line-height:1.4}
+ .mapview{height:min(55vh,450px)}
+}
+@media(max-width:500px){
+ .mapview{height:355px}
+ #detailPanel .details{font-size:16px}
+}
+@media(prefers-reduced-motion:reduce){
+ #detailPanel{transition:none}
+}
 </style></head><body>
 <header><div class="headerrow"><div><div class="brand">BAZSET · ARCADE HARDWARE</div><h1 data-t="title">Rainbow Islands PCB Explorer</h1><p data-t="intro">Explore the original Taito Rainbow Islands arcade board, its chips, circuits and MiSTer FPGA equivalents.</p></div><div><label data-t="language" for="language">Language</label><select id="language" aria-label="Language"><option value="en">English</option><option value="ja">日本語</option></select></div></div>
 <div class="pills"><span class="pill">TAITO B22 · K1100277A</span><span class="pill" data-t="readOnly">Read-only research explorer</span><span class="pill" data-t="boardRevision">Extra schematics: different PCB revision</span></div></header>
-<main><section class="panel"><div class="panelhead"><h2 data-t="board">Original PCB photographs</h2>
+<main><section class="panel"><div class="panelhead"><h2 data-t="board">Original PCB photographs</h2><p class="mobile-hint" data-t="mobileHint">Tap a highlighted chip or choose one below to open its details.</p>
 <div class="controls"><button id="frontBtn" class="active" data-t="front">Component side</button><button id="backBtn" data-t="back">Solder side</button><label for="zoom" data-t="zoom">Zoom</label><input type="range" id="zoom" min="35" max="250" step="5" value="100"><span id="zoomVal" class="small">100%</span></div>
 <div class="controls"><input type="search" id="search" placeholder="Search components, signals, files…" autocomplete="off"><select id="category" aria-label="Category"></select></div></div>
 <div class="mapview" id="mapView"><div class="board" id="boardImage"><img id="pcbPhoto" src="front.webp" alt="Rainbow Islands arcade PCB front"></div></div>
 <div class="legend"><div data-t="legend">Solid markers = marked components. Dashed markers = estimated regions. Back-side nets are not electrically verified.</div><p class="photo-credit" data-t="photoCredit">PCB photographs generously provided by Ben. Thank you, Ben!</p><div class="chipList" id="chips"></div></div>
 <div class="section"><h2 data-t="circuits">Circuit references</h2><div class="chipList" id="circuits"></div></div></section>
-<section class="panel"><div class="panelhead"><h2 id="detailTitle">Rainbow Islands</h2><div class="small" id="detailSub"></div></div><div class="details" id="detail"></div>
+<section class="panel" id="detailPanel"><div class="panelhead"><button type="button" id="closeDetail" class="close-detail" aria-label="Close chip details">×</button><h2 id="detailTitle">Rainbow Islands</h2><div class="small" id="detailSub"></div></div><div class="details" id="detail"></div>
 <div class="section"><h2 data-t="references">Reference sources</h2><div id="references"></div></div></section></main>
-<footer data-t="footer">BAZSET hardware research · Partial original-board drawings and separately identified donor schematics; not a complete verified netlist.</footer>
+<div id="sheetBackdrop" class="sheet-backdrop" aria-hidden="true"></div><footer data-t="footer">BAZSET hardware research · Partial original-board drawings and separately identified donor schematics; not a complete verified netlist.</footer>
 <script src="./site_data.js"></script><script src="./locale_ja.js"></script><script src="./app.js"></script>
 </body></html>

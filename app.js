@@ -5,6 +5,7 @@ const EN={
  title:"Rainbow Islands PCB Explorer",
  intro:"Explore the original Taito Rainbow Islands arcade board, its chips, circuits and MiSTer FPGA equivalents.",
  language:"Language",readOnly:"Read-only research explorer",boardRevision:"Extra schematics: different PCB revision",
+ mobileHint:"Tap a highlighted chip or a name below to see its information instantly.",closeDetails:"Close chip details",
  board:"Original PCB photographs",front:"Component side",back:"Solder side",zoom:"Zoom",
  search:"Search components, signals, files…",all:"All categories",
  legend:"Solid markers = marked components. Dashed markers = estimated regions. Back-side nets are not electrically verified.",
@@ -39,7 +40,34 @@ const tr=(kind,id,field,defaultValue)=>{
  if(lang!=="ja")return defaultValue;
  return JA[kind]?.[id]?.[field] ?? defaultValue;
 };
-const menu=e=>{e.preventDefault();state.selected={type:e.currentTarget.dataset.kind,id:e.currentTarget.dataset.id};renderDetail();renderMap();};
+const mobileSheet=window.matchMedia("(max-width:920px)");
+let lastTrigger=null;
+function openSheet(){
+ if(!mobileSheet.matches)return;
+ $("detailPanel").setAttribute("role","dialog");
+ $("detailPanel").setAttribute("aria-modal","true");
+ $("detailPanel").setAttribute("aria-labelledby","detailTitle");
+ $("detailPanel").scrollTop=0;
+ document.body.classList.add("sheet-open");
+ $("closeDetail").focus({preventScroll:true});
+}
+function closeSheet(restoreFocus=true){
+ if(!document.body.classList.contains("sheet-open"))return;
+ document.body.classList.remove("sheet-open");
+ $("detailPanel").removeAttribute("role");
+ $("detailPanel").removeAttribute("aria-modal");
+ $("detailPanel").removeAttribute("aria-labelledby");
+ if(restoreFocus){
+  if(lastTrigger&&lastTrigger.isConnected)lastTrigger.focus({preventScroll:true});
+  else $("frontBtn").focus({preventScroll:true});
+ }
+}
+const menu=e=>{
+ e.preventDefault();
+ lastTrigger=e.currentTarget;
+ state.selected={type:e.currentTarget.dataset.kind,id:e.currentTarget.dataset.id};
+ renderDetail();renderMap();openSheet();
+};
 function sourceCards(arr){
  if(!arr?.length)return "";
  return '<div class="tags">'+arr.map(f=>tags(f)).join(" ")+'</div><p class="small">'+escape(t("noteRTL"))+'</p>';
@@ -51,6 +79,8 @@ function setLanguage(){
  $("search").placeholder=t("search");
  $("search").setAttribute("aria-label",t("search"));
  $("category").setAttribute("aria-label",t("all"));
+ $("closeDetail").setAttribute("aria-label",t("closeDetails"));
+ $("closeDetail").title=t("closeDetails");
  renderCats();renderLists();renderDetail();renderMap();
 }
 function renderCats(){
@@ -125,6 +155,10 @@ function renderRefs(){
  $("references").innerHTML=DATA.references.map(r=>"<div class='source'>"+link(r.url,r.title)+"</div>").join("")+
  "<p class='note'>"+escape(t("noFull"))+"</p>";
 }
+$("closeDetail").addEventListener("click",()=>closeSheet());
+$("sheetBackdrop").addEventListener("click",()=>closeSheet());
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&document.body.classList.contains("sheet-open")){e.preventDefault();closeSheet();}});
+mobileSheet.addEventListener("change",()=>{if(!mobileSheet.matches)closeSheet(false);});
 $("language").addEventListener("change",e=>{
  lang=e.target.value;
  try{localStorage.setItem("ri_pcb_language",lang)}catch{}
