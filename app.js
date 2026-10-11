@@ -10,6 +10,10 @@ const EN={
  search:"Search components, signals, files…",all:"All categories",
  legend:"Solid markers = marked components. Dashed markers = estimated regions. Back-side nets are not electrically verified.",
  photoCredit:"PCB photographs generously provided by Ben. Thank you, Ben!",
+ compare:"Compare 2008 photo",compareBen:"Ben’s PCB photo — our mapped board reference",compareCommons:"Noggin73’s 2008 Wikimedia Commons photo (public domain). Tap to enlarge.",
+ archiveFacts:"Historical photo: Noggin73; uploaded 24 January 2008; 1,280 × 848 pixels; public domain.",
+ photoDiff:"The 2008 photograph appears to have a small daughterboard at the upper right. This does not establish the same board revision, ROM population, chip positions or wiring as Ben’s board.",
+ commonsSource:"Original Wikimedia Commons photo and licence ↗",
  circuits:"Circuit references",references:"Reference sources",
  footer:"BAZSET hardware research · Partial original-board drawings and separately identified donor schematics; not a complete verified netlist.",
  noResults:"No matching items found.",about:"Function",addr:"Memory / I/O address",focus:"Research priority",
@@ -101,6 +105,13 @@ function renderLists(){
  return chips;
 }
 function renderMap(){
+ const comparison=state.side==="compare";
+ $("boardImage").hidden=comparison;
+ $("compareView").hidden=!comparison;
+ $("comparisonNotes").hidden=!comparison;
+ $("zoom").disabled=comparison;
+ $("zoom").title=comparison?(lang==="ja"?"比較画像では拡大率を変更できません":"Zoom applies to Ben’s mapped PCB views only"):"";
+ if(comparison)return;
  const board=$("boardImage");
  board.style.width=(716*state.scale/100)+"px";
  board.style.height=(711*state.scale/100)+"px";
@@ -153,6 +164,7 @@ function renderDetail(){
 }
 function renderRefs(){
  $("references").innerHTML=DATA.references.map(r=>"<div class='source'>"+link(r.url,r.title)+"</div>").join("")+
+ "<div class='source'>"+link("https://commons.wikimedia.org/wiki/File:Rainbow_Islands_PCB.jpg",t("commonsSource"))+" · Noggin73 (2008, public domain)</div>"+
  "<p class='note'>"+escape(t("noFull"))+"</p>";
 }
 $("closeDetail").addEventListener("click",()=>closeSheet());
@@ -165,10 +177,13 @@ $("language").addEventListener("change",e=>{
  setLanguage();renderRefs();
 });
 $("frontBtn").addEventListener("click",()=>{
- state.side="front";$("frontBtn").classList.add("active");$("backBtn").classList.remove("active");renderMap();
+ state.side="front";$("frontBtn").classList.add("active");$("backBtn").classList.remove("active");$("compareBtn").classList.remove("active");renderMap();
 });
 $("backBtn").addEventListener("click",()=>{
- state.side="back";$("backBtn").classList.add("active");$("frontBtn").classList.remove("active");renderMap();
+ state.side="back";$("backBtn").classList.add("active");$("frontBtn").classList.remove("active");$("compareBtn").classList.remove("active");renderMap();
+});
+$("compareBtn").addEventListener("click",()=>{
+ state.side="compare";$("compareBtn").classList.add("active");$("frontBtn").classList.remove("active");$("backBtn").classList.remove("active");renderMap();
 });
 $("zoom").value=String(state.scale);
 $("zoom").addEventListener("input",e=>{state.scale=+e.target.value;renderMap()});

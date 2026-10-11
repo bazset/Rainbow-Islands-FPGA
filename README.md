@@ -6,6 +6,7 @@ An interactive BAZSET research map for the Taito Rainbow Islands arcade PCB **K1
 
 - English (default) and Japanese / 日本語 language selector.
 - Mobile-friendly chip details: tap any mapped chip or chip name to open a readable bottom-sheet panel, scroll within it, then dismiss using ×, the dark backdrop, or Escape. Desktop continues to use the side details panel.
+- **2008 photo comparison:** optional side-by-side view of Ben's component-side photo and [Noggin73's Rainbow Islands PCB photo on Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Rainbow_Islands_PCB.jpg), original upload 24 January 2008, 1,280 × 848, public domain. It is reference imagery, **not** a schematic or a verified identical PCB revision. A small daughterboard appears in the upper-right of the 2008 photo; no hotspots or nets are inferred from that photo.
 - Original component-side and solder-side photographs **generously provided by Ben — thank you, Ben!** Search, zoom, chip selection, original B22 circuit links, and MiSTer FPGA source-module cross-reference by **filename only**.
 - **No FPGA source code, private RTL excerpts, personal computer paths, release files, KiCad sheets or credentials are included in this static publication.**
 - Physical chip/region annotations contain estimates clearly marked with dashed amber boxes. The solder-side copper nets are **not** electrically verified and are intentionally not overlaid.
