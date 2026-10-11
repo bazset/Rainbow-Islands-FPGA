@@ -11,6 +11,7 @@ ui: {
  archiveFacts:"過去の参考写真：Noggin73氏が撮影。2008年1月24日に投稿、1,280 × 848 ピクセル。パブリックドメイン。",
  photoDiff:"2008年の写真には右上に小さな追加基板が見られます。Benさんの基板と同じリビジョン、ROM構成、部品位置、配線であるとは確認できていません。",
  commonsSource:"Wikimedia Commonsの元画像とライセンス ↗",
+ donorRelated:"対応機能の Extra 版回路図（参考のみ）",donorBrowse:"このシートの部品・信号を調べる",
  donorTitle:"Extra版 K1100319A：KiCad 部品・信号を調べる",donorWarning:"注意：これは Extra版 K1100319A の回路図です。実機 B22 K1100277A の配線や IC 番号と同一であることは確認されていません。",
  donorHelp:"シートごとの部品番号・型番・信号名を検索できます。信号名の一致だけでは、個別ピンの接続を証明できません。",donorComponents:"回路図の部品",donorSignals:"信号名・シート間ポート",
  donorCredit:"原図：Ulf Skutnabba (@skutis77)、Jotego / KiCad、Rainbow Islands Extra K1100319A。",donorOpenSource:"元の KiCad 回路図を開く ↗",donorAll:"全8シート",donorSearch:"IC 番号・部品名・信号名で検索…",donorShown:"表示",donorFound:"該当",donorPartsCount:"部品",donorSignalsCount:"信号",donorNone:"該当なし。別のシートや検索語をお試しください。",

@@ -15,6 +15,7 @@ const EN={
  photoDiff:"The 2008 photograph appears to have a small daughterboard at the upper right. This does not establish the same board revision, ROM population, chip positions or wiring as Ben’s board.",
  commonsSource:"Original Wikimedia Commons photo and licence ↗",
  circuits:"Circuit references",references:"Reference sources",
+ donorRelated:"Related Extra-board schematic sheet (functional reference only)",donorBrowse:"Browse sheet parts and signal names",
  donorTitle:"Explore Extra K1100319A KiCad parts and signals",donorWarning:"Different board: these designators and signals belong to the Extra K1100319A schematic, NOT a verified K1100277A B22 wiring diagram.",
  donorHelp:"Browse sheet-level component values and named signal labels. These names do NOT prove individual pin connections.",donorComponents:"Schematic components",donorSignals:"Named signals / ports",
  donorCredit:"Source: Ulf Skutnabba (@skutis77), Jotego / KiCad, Rainbow Islands Extra K1100319A.",donorOpenSource:"Open original KiCad schematics ↗",donorAll:"All 8 sheets",donorSearch:"Search ICs, values and signals…",donorShown:"shown",donorFound:"found",donorPartsCount:"parts",donorSignalsCount:"signals",donorNone:"No matches. Try another sheet or keyword.",
@@ -163,8 +164,31 @@ function renderDetail(){
    if(related.length)html+="<h3>"+escape(t("related"))+"</h3><div class='chipList'>"+related.map(c=>'<button data-kind="circuit" data-id="'+escape(c.id)+'">'+escape(tr("circuits",c.id,"title",c.title))+"</button>").join("")+"</div>";
    html+="<h3>"+escape(t("source"))+"</h3>"+sourceCards(n.rtl);
  }
+ const donorByB22={
+   cpu68k:"cpu_main",rom10:"cpu_main",rom08:"cpu_main",rom11:"cpu_main",rom09:"cpu_main",
+   sprites:"sprites",sprite_ram:"sprites",
+   tile:"tile_layers",tile_ram:"tile_layers",romgfx:"tile_layers",
+   rgb:"color_mixer",ciu:"sound",z80:"sound",ym2151:"sound",ym3012:"sound",amp:"sound",
+   pad:"io",jamma:"io",cchip:"io",xtal:"misc"
+ };
+ const donorKey=!isCircuit?donorByB22[id]:null;
+ const extraPage=donorKey?donor?.pages?.find(p=>p.key===donorKey):null;
+ if(extraPage){
+   html+="<h3>"+escape(t("donorRelated"))+"</h3>"+
+   "<p class='small'>"+escape(t("donorWarning"))+"</p>"+
+   "<button type='button' data-donor-key='"+escape(donorKey)+"'>"+
+   escape(t("donorBrowse"))+" · "+escape(t("donorPageTitles")[donorKey]||extraPage.title)+" ↗</button>";
+ }
  $("detail").innerHTML=html;
  $("detail").querySelectorAll("button[data-kind]").forEach(b=>b.addEventListener("click",menu));
+ $("detail").querySelectorAll("button[data-donor-key]").forEach(b=>b.addEventListener("click",()=>{
+   closeSheet(false);
+   $("donorDetails").open=true;
+   $("donorPage").value=b.dataset.donorKey;
+   $("donorSearch").value="";
+   renderDonor();
+   $("donorSection").scrollIntoView({block:"start",behavior:"smooth"});
+ }));
 }
 
 /* Reference-only KiCad inventory for the DIFFERENT Extra K1100319A board.
